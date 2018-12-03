@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "548371953993",
+    "firebase_url": "https://freerun-fc7c4.firebaseio.com",
+    "project_id": "freerun-fc7c4",
+    "storage_bucket": "freerun-fc7c4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548371953993:android:f2c72cec0d55a985",
+        "android_client_info": {
+          "package_name": "com.example.d_wen.freerun"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "548371953993-l98khh3f20is5l970jho3g14m76u3e0e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.d_wen.freerun",
+            "certificate_hash": "f0b08473f720570ab9e296b660ab1df34e81601a"
+          }
+        },
+        {
+          "client_id": "548371953993-61t5tiq4d08443gud95cgdg1torcla08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJPwhh4g8jCgpPrhdzn00sG5pgBNyZO1E"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "548371953993-61t5tiq4d08443gud95cgdg1torcla08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

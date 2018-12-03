@@ -7,6 +7,9 @@ import android.view.View;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final int REGISTER_PROFILE = 1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,6 +22,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void clickedRegisterButton (View view){
         Intent StartRegisterActivity = new Intent(this, RegisterActivity.class);
-        startActivity(StartRegisterActivity);
+        startActivityForResult(StartRegisterActivity, REGISTER_PROFILE);
+
     }
 }
