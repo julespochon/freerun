@@ -3,23 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/background">
 
-    <EditText
-        android:id="@+id/Username"
+    <TextView
+        android:id="@+id/loginMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
+        android:background="#80FFFFFF" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#80FFFFFF"
         android:autofillHints=""
+        android:ems="10"
         android:hint="Username"
-        android:inputType="textPersonName"/>
+        android:inputType="textPersonName" />
 
     <EditText
-        android:id="@+id/Password"
+        android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
+        android:background="#80FFFFFF"
         android:autofillHints=""
+        android:ems="10"
         android:hint="Password"
         android:inputType="textPassword" />
 

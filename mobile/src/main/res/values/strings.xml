@@ -5,4 +5,12 @@
     <string name="password">Password</string>
     <string name="height">Height (cm)</string>
     <string name="weight">Weight (Kg)</string>
+    <string name="clear_form">clear form</string>
+    <string name="save_profile">save profile</string>
+    <string name="missing_picture">Picture is missing</string>
+    <string name="photo_upload_failed">Failed to upload the photo</string>
+    <string name="registration_success">successful registration</string>
+    <string name="registration_failed">Registration failed</string>
+    <string name="not_registered">You are not registered yet</string>
+    <string name="wrong_password">Wrong password</string>
 </resources>
