@@ -59,11 +59,13 @@ public class LoginActivity extends AppCompatActivity {
                         } else {
                             mTextView.setText(R.string.wrong_password);
                             mTextView.setTextColor(Color.RED);
+                            break;
                         }
 
                     } else {
                         mTextView.setText(R.string.not_registered);
                         mTextView.setTextColor(Color.RED);
+                        break;
                     }
                 }
             }
@@ -95,4 +97,5 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     }
+
 }
