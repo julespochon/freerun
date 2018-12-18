@@ -1,12 +1,14 @@
 package com.example.d_wen.freerun;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 
 /**
@@ -28,6 +30,7 @@ public class RunPreparationFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private View fragmentView;
 
     public RunPreparationFragment() {
         // Required empty public constructor
@@ -64,7 +67,17 @@ public class RunPreparationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_run_preparation, container, false);
+        fragmentView = inflater.inflate(R.layout.fragment_run_preparation,
+                container, false);
+        Button startRunButton = fragmentView.findViewById(R.id.startRunButton);
+        startRunButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intentRunPreparation = new Intent(getActivity(), RunActivity.class);
+                startActivity(intentRunPreparation);
+            }
+        });
+        return fragmentView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -90,6 +103,7 @@ public class RunPreparationFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
 
     /**
      * This interface must be implemented by activities that contain this

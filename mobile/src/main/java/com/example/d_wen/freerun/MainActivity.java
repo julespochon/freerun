@@ -1,44 +1,47 @@
 package com.example.d_wen.freerun;
 
-import android.net.Uri;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements MyProfileFragment.
-        OnFragmentInteractionListener, RunPreparationFragment.OnFragmentInteractionListener{
-    private SectionsStatePagerAdapter mSectionStatePagerAdapter;
-    private MyProfileFragment myProfileFragment;
-    private RunPreparationFragment runPreparationFragment;
+public class MainActivity extends AppCompatActivity {
 
-    // TODO: faire une app cool
+    private TextView mTextMessage;
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.navigation_run_preparation:
+                    mTextMessage.setText(R.string.title_run_preparation);
+                    return true;
+                case R.id.navigation_my_profile:
+                    mTextMessage.setText(R.string.title_my_profile);
+                    return true;
+                case R.id.navigation_personal_stats:
+                    mTextMessage.setText(getString(R.string.title_personal_stats));
+                    return true;
+                case R.id.navigation_shared_stats:
+                    mTextMessage.setText(getString(R.string.title_share_stats));
+                    return true;
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSectionStatePagerAdapter = new SectionsStatePagerAdapter(getSupportFragmentManager());
-
-        myProfileFragment = new MyProfileFragment();
-        runPreparationFragment = new RunPreparationFragment();
-
-        ViewPager mViewPager = findViewById(R.id.mainViewPager);
-        setUpViewPager(mViewPager);
-
-        // Set NewRecordingFragment as default tab once started the activity
-        mViewPager.setCurrentItem(mSectionStatePagerAdapter
-                .getPositionByTitle("New Recording"));
+        mTextMessage = (TextView) findViewById(R.id.message);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
-    private void setUpViewPager(ViewPager mViewPager) {
-        mSectionStatePagerAdapter.addFragment(runPreparationFragment, "RUN");
-        mSectionStatePagerAdapter.addFragment(myProfileFragment, "PROFILE");
-        mViewPager.setAdapter(mSectionStatePagerAdapter);
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
-    }
 }

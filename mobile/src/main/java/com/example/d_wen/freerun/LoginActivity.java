@@ -17,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
-
     private static final int REGISTER_PROFILE = 1;
     private Profile userProfile = null;
     private String userID;
@@ -72,6 +71,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+        Intent intentMainActivity = new Intent(LoginActivity.this, MainActivityFrag.class);
+        startActivity(intentMainActivity);
     }
 
     public void clickedRegisterButton (View view){
@@ -83,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        
+
         if ( requestCode == REGISTER_PROFILE && resultCode == RESULT_OK && data != null){
             userProfile = (Profile) data.getSerializableExtra
                     ("userProfile");
