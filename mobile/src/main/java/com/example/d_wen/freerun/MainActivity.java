@@ -1,15 +1,21 @@
 package com.example.d_wen.freerun;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements MyProfileFragment.
-        OnFragmentInteractionListener, RunPreparationFragment.OnFragmentInteractionListener{
-    private SectionsStatePagerAdapter mSectionStatePagerAdapter;
-    private MyProfileFragment myProfileFragment;
-    private RunPreparationFragment runPreparationFragment;
+        OnFragmentInteractionListener, RunPreparationFragment.OnFragmentInteractionListener,
+        HistoryFragment.OnFragmentInteractionListener{
+
+    private ActionBar toolbar;
 
     // TODO: faire une app cool
 
@@ -18,24 +24,51 @@ public class MainActivity extends AppCompatActivity implements MyProfileFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSectionStatePagerAdapter = new SectionsStatePagerAdapter(getSupportFragmentManager());
+        toolbar=getSupportActionBar();
 
-        myProfileFragment = new MyProfileFragment();
-        runPreparationFragment = new RunPreparationFragment();
+        toolbar.setTitle("Run");
+        loadFragment(new RunPreparationFragment());
 
-        ViewPager mViewPager = findViewById(R.id.mainViewPager);
-        setUpViewPager(mViewPager);
-
-        // Set NewRecordingFragment as default tab once started the activity
-        mViewPager.setCurrentItem(mSectionStatePagerAdapter
-                .getPositionByTitle("New Recording"));
+        BottomNavigationView navigation = findViewById(R.id.pageTabStrip);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
-    private void setUpViewPager(ViewPager mViewPager) {
-        mSectionStatePagerAdapter.addFragment(runPreparationFragment, "RUN");
-        mSectionStatePagerAdapter.addFragment(myProfileFragment, "PROFILE");
-        mViewPager.setAdapter(mSectionStatePagerAdapter);
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            =new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            Fragment fragment;
+            switch (item.getItemId()) {
+                case R.id.navigation_run:
+                    toolbar.setTitle("Run");
+                    fragment=new RunPreparationFragment();
+                    loadFragment(fragment);
+                    return true;
+                case R.id.navigation_profile:
+                    toolbar.setTitle("Profile");
+                    fragment=new MyProfileFragment();
+                    loadFragment(fragment);
+                    return true;
+                case R.id.navigation_history:
+                    toolbar.setTitle("History");
+                    fragment=new HistoryFragment();
+                    loadFragment(fragment);
+                    return true;
+            }
+
+            return false;
+        }
+    };
+
+    private void loadFragment(Fragment fragment) {
+        // load fragment
+        FragmentTransaction transaction=getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
+
 
     @Override
     public void onFragmentInteraction(Uri uri) {
