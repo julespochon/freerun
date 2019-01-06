@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -41,6 +41,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     private static final DatabaseReference profileGetRef = database.getReference("profiles");
+    private static final String COLOR= "COLOR";
     private static DatabaseReference profileRef = profileGetRef.push();
 
     private static final int PICK_IMAGE = 1;
@@ -166,28 +167,33 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void addProfileToFirebaseDB() {
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) ((ImageView) findViewById(R.id
-                .userImage)).getDrawable();
-        if (bitmapDrawable == null) {
+        ImageView photoColor = (ImageView)findViewById(R.id.userImage);
+        ColorDrawable drawable =(ColorDrawable) photoColor.getBackground();
+        if (!photoColor.getDrawable().getClass().getCanonicalName().
+                equals("android.widget.ImageView.ImageViewBitmapDrawable")) {
             Toast.makeText(this, R.string.missing_picture, Toast.LENGTH_SHORT).show();
             return;
         }
-        Bitmap bitmap = bitmapDrawable.getBitmap();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-        byte[] data = baos.toByteArray();
+        else {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) photoColor.getDrawable();
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+            byte[] data = baos.toByteArray();
 
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-        StorageReference photoRef = storageRef.child("photos").child(profileRef.getKey() + ".jpg");
-        UploadTask uploadTask = photoRef.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-                Toast.makeText(RegisterActivity.this, R.string.photo_upload_failed, Toast
-                        .LENGTH_SHORT).show();
-            }
-        }).addOnSuccessListener(new PhotoUploadSuccessListener());
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+            StorageReference photoRef = storageRef.child("photos").child(profileRef.getKey() + ".jpg");
+            UploadTask uploadTask = photoRef.putBytes(data);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    Toast.makeText(RegisterActivity.this, R.string.photo_upload_failed, Toast
+                            .LENGTH_SHORT).show();
+                }
+            }).addOnSuccessListener(new PhotoUploadSuccessListener());
+        }
+
     }
 
     private class PhotoUploadSuccessListener implements OnSuccessListener<UploadTask.TaskSnapshot> {
@@ -233,3 +239,4 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 }
+
