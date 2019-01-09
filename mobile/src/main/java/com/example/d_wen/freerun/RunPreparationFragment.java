@@ -5,10 +5,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 
 /**
@@ -31,6 +35,8 @@ public class RunPreparationFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
     private View fragmentView;
+    private int aimedPace = 0;
+    private int plannedDistance = 0;
 
     public RunPreparationFragment() {
         // Required empty public constructor
@@ -69,7 +75,70 @@ public class RunPreparationFragment extends Fragment {
         // Inflate the layout for this fragment
         fragmentView = inflater.inflate(R.layout.fragment_run_preparation,
                 container, false);
-        Button startRunButton = fragmentView.findViewById(R.id.startRunButton);
+        EditText paceEntry = fragmentView.findViewById(R.id.pace);
+        EditText distanceEntry = fragmentView.findViewById(R.id.distance);
+        final TextView runDuration = fragmentView.findViewById(R.id.calculatedTime);
+
+        paceEntry.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                if (s.length() > 0) {
+//                    int number = Integer.parseInt(s.toString());
+//                    aimedPace -= number;
+//                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().isEmpty()){
+                    aimedPace = 0;
+                }
+                else {
+                    int number = Integer.parseInt(s.toString());
+                    aimedPace = number;
+                }
+                int hours = aimedPace * plannedDistance / 60; //since both are ints, you get an int
+                int minutes = aimedPace * plannedDistance % 60;
+                runDuration.setText(hours + ":" + minutes);
+            }
+        });
+
+        distanceEntry.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                if (s.length() > 0) {
+//                    int number = Integer.parseInt(s.toString());
+//                    plannedDistance -= number;
+//                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(s.toString().isEmpty()){
+                    plannedDistance = 0;
+                }
+                else {
+                    int number = Integer.parseInt(s.toString());
+                    plannedDistance = number;
+                }
+                int hours = aimedPace * plannedDistance / 60; //since both are ints, you get an int
+                int minutes = aimedPace * plannedDistance % 60;
+                runDuration.setText(hours + ":" + minutes);
+            }
+        });
+
+
+        Button startRunButton = fragmentView.findViewById(R.id.runButton);
         startRunButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

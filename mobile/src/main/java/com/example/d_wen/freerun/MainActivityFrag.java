@@ -7,11 +7,11 @@ import android.os.Bundle;
 
 public class MainActivityFrag extends AppCompatActivity implements MyProfileFragment.
         OnFragmentInteractionListener, RunPreparationFragment.OnFragmentInteractionListener{
+
     private SectionsStatePagerAdapter mSectionStatePagerAdapter;
     private MyProfileFragment myProfileFragment;
     private RunPreparationFragment runPreparationFragment;
 
-    // TODO: faire une app cool
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

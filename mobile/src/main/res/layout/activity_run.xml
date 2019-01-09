@@ -6,4 +6,28 @@
     android:layout_height="match_parent"
     tools:context=".RunActivity">
 
+    <Button
+        android:id="@+id/button1"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="177dp"
+        android:onClick="onClick"
+        android:text="Button" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button1"
+        android:layout_centerHorizontal="true"
+        android:ems="10"
+        android:text="Start running now"
+        app:layout_constraintTop_toBottomOf="@+id/button1">
+
+        <requestFocus />
+    </EditText>
+
 </android.support.constraint.ConstraintLayout>

@@ -73,7 +73,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
-        Intent intentMainActivity = new Intent(LoginActivity.this, MainActivityFrag.class);
+        Intent intentMainActivity = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intentMainActivity);
     }
 
@@ -99,4 +99,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    public void bypass(View view) {
+        Intent bypassMainactivity = new Intent(this, MainActivity.class);
+        startActivity(bypassMainactivity);
+    }
 }
