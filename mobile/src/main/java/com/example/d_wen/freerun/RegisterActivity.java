@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -159,7 +160,7 @@ public class RegisterActivity extends AppCompatActivity {
         TextView heightTextView = findViewById(R.id.heightEdit);
         TextView weightTextView = findViewById(R.id.weightEdit);
 
-        userImageView.setImageDrawable(null);
+        userImageView.setImageResource(R.drawable.avatar);
         usernameTextView.setText("");
         passwordTextView.setText("");
         heightTextView.setText("");
