@@ -167,19 +167,13 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void addProfileToFirebaseDB() {
-        ImageView photoColor = (ImageView)findViewById(R.id.userImage);
-        ColorDrawable drawable =(ColorDrawable) photoColor.getBackground();
-        if (!photoColor.getDrawable().getClass().getCanonicalName().
-                equals("android.widget.ImageView.ImageViewBitmapDrawable")) {
-            Toast.makeText(this, R.string.missing_picture, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        else {
-            BitmapDrawable bitmapDrawable = (BitmapDrawable) photoColor.getDrawable();
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-            byte[] data = baos.toByteArray();
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) ((ImageView) findViewById(R.id
+                .userImage)).getDrawable();
+
+        Bitmap bitmap = bitmapDrawable.getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+        byte[] data = baos.toByteArray();
 
             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
             StorageReference photoRef = storageRef.child("photos").child(profileRef.getKey() + ".jpg");
@@ -192,7 +186,7 @@ public class RegisterActivity extends AppCompatActivity {
                             .LENGTH_SHORT).show();
                 }
             }).addOnSuccessListener(new PhotoUploadSuccessListener());
-        }
+
 
     }
 

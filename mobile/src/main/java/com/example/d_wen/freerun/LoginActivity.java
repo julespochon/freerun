@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         mTextView.setText(R.string.not_registered);
                         mTextView.setTextColor(Color.RED);
-                        break;
+                        //break;
                     }
                 }
             }
