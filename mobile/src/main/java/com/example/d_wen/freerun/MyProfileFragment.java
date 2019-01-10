@@ -98,13 +98,14 @@ public class MyProfileFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String user_db=dataSnapshot.child("username").getValue(String.class);
-                String password_db=dataSnapshot.child("password").getValue(String.class);
+                String email_db=dataSnapshot.child("email").getValue(String.class);
                 int height_db=dataSnapshot.child("height").getValue(int.class);
                 float weight_db=dataSnapshot.child("weight").getValue(float.class);
                 String photo=dataSnapshot.child("photo").getValue(String.class);
 
-                userProfile=new Profile(user_db, password_db);
-                userProfile.password=password_db;
+                userProfile=new Profile();
+                userProfile.username=user_db;
+                userProfile.email=email_db;
                 userProfile.height=height_db;
                 userProfile.weight=weight_db;
                 userProfile.photoPath=photo;
@@ -138,8 +139,8 @@ public class MyProfileFragment extends Fragment {
         TextView usernameTextView=fragmentView.findViewById(R.id.usernameValue);
         usernameTextView.setText(userProfile.username);
 
-        TextView passwordTextView=fragmentView.findViewById(R.id.passwordValue);
-        passwordTextView.setText(userProfile.password);
+        TextView emailTextView=fragmentView.findViewById(R.id.emailValue);
+        emailTextView.setText(userProfile.email);
 
         TextView heightTextView=fragmentView.findViewById(R.id.heightValue);
         heightTextView.setText(String.valueOf(userProfile.height));

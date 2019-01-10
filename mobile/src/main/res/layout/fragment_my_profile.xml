@@ -28,15 +28,15 @@
         app:layout_constraintTop_toBottomOf="@+id/userImageValue" />
 
     <TextView
-        android:id="@+id/passwordValue"
+        android:id="@+id/emailValue"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textEmailAddress"
         android:maxLines="1"
         android:singleLine="true"
         android:textSize="24sp"
         app:layout_constraintTop_toBottomOf="@+id/usernameValue"
-        app:layout_constraintLeft_toRightOf="@id/Password"
+        app:layout_constraintLeft_toRightOf="@id/email"
         app:layout_constraintRight_toRightOf="parent" />
 
     <TextView
@@ -47,7 +47,7 @@
         android:maxLines="1"
         android:singleLine="true"
         android:textSize="24sp"
-        app:layout_constraintTop_toBottomOf="@+id/passwordValue"
+        app:layout_constraintTop_toBottomOf="@+id/emailValue"
         app:layout_constraintLeft_toRightOf="@id/Height"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -75,15 +75,15 @@
         android:layout_marginLeft="10dp"/>
 
     <TextView
-        android:id="@+id/Password"
+        android:id="@+id/email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/passwordValue"
-        app:layout_constraintRight_toLeftOf="@+id/passwordValue"
+        app:layout_constraintTop_toTopOf="@+id/emailValue"
+        app:layout_constraintRight_toLeftOf="@+id/emailValue"
         android:layout_marginLeft="10dp"
         android:textSize="24sp"
-        android:text="Password :" />
+        android:text="Email :" />
 
     <TextView
         android:id="@+id/Height"

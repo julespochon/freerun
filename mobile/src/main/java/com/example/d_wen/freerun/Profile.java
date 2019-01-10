@@ -6,6 +6,7 @@ public class Profile implements Serializable {
 
     protected String username;
     protected String password;
+    protected String email;
     protected int height;
     protected float weight;
     protected String photoPath;
@@ -13,5 +14,9 @@ public class Profile implements Serializable {
    public Profile(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+    public Profile(){
+
     }
 }

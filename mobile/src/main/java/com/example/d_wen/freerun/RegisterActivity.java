@@ -4,13 +4,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,8 +18,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,23 +43,100 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity  {
 
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     private static final DatabaseReference profileGetRef = database.getReference("profiles");
-    private static final String COLOR= "COLOR";
-    private static DatabaseReference profileRef = profileGetRef.push();
+    private static final String TAG = "EmailPassword";
 
     private static final int PICK_IMAGE = 1;
 
     private File imageFile;
     private Profile userProfile;
 
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        mAuth = FirebaseAuth.getInstance();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_clear:
+                clearUser();
+                break;
+            case R.id.action_validate:
+                editUser();
+                createAccount();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void createAccount() {
+        String email = userProfile.email;
+        String password = userProfile.password;
+
+        Log.d(TAG, "createAccount:" + email);
+
+        if(TextUtils.isEmpty(email) || TextUtils.isEmpty(password)){
+            Toast.makeText(RegisterActivity.this, "Fields are empty",
+                    Toast.LENGTH_SHORT).show();
+        }else {
+            // [START create_user_with_email]
+            mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d(TAG, "createUserWithEmail:success");
+
+                                addProfileToFirebaseDB();
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                sendEmailVerification(user);
+
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                Toast.makeText(RegisterActivity.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+            // [END create_user_with_email]
+        }
+    }
+
+    private void sendEmailVerification(final FirebaseUser user) {
+
+        // Send verification email
+        // [START send_email_verification]
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Toast.makeText(RegisterActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "sendEmailVerification", task.getException());
+                            Toast.makeText(RegisterActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        // [END_EXCLUDE]
+                    }
+                });
+        // [END send_email_verification]
+    }
+
 
     public void chooseImage(View view) {
         Intent intent = new Intent();
@@ -112,10 +194,14 @@ public class RegisterActivity extends AppCompatActivity {
     private void editUser() {
         TextView username = findViewById(R.id.usernameEdit);
         TextView password = findViewById(R.id.passwordEdit);
+
         userProfile = new Profile(username.getText().toString(), password.getText().toString());
 
         TextView height = findViewById(R.id.heightEdit);
         TextView weight = findViewById(R.id.weightEdit);
+        TextView email = findViewById(R.id.emailEdit);
+
+        userProfile.email = email.getText().toString();
         try {
             userProfile.height = Integer.valueOf(height.getText().toString());
         } catch (NumberFormatException e) {
@@ -137,20 +223,6 @@ public class RegisterActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_register_activity, menu);
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_clear:
-                clearUser();
-                break;
-            case R.id.action_validate:
-                editUser();
-                addProfileToFirebaseDB();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void clearUser() {
@@ -177,7 +249,8 @@ public class RegisterActivity extends AppCompatActivity {
         byte[] data = baos.toByteArray();
 
             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-            StorageReference photoRef = storageRef.child("photos").child(profileRef.getKey() + ".jpg");
+            StorageReference photoRef = storageRef.child("photos").child(profileGetRef.
+                    child(FirebaseAuth.getInstance().getCurrentUser().getUid()).getKey() + ".jpg");
             UploadTask uploadTask = photoRef.putBytes(data);
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -187,8 +260,6 @@ public class RegisterActivity extends AppCompatActivity {
                             .LENGTH_SHORT).show();
                 }
             }).addOnSuccessListener(new PhotoUploadSuccessListener());
-
-
     }
 
     private class PhotoUploadSuccessListener implements OnSuccessListener<UploadTask.TaskSnapshot> {
@@ -198,7 +269,8 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(final Uri uri) {
                     userProfile.photoPath = uri.toString();
-                    profileRef.runTransaction(new ProfileDataUploadHandler());
+                    profileGetRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                            runTransaction(new ProfileDataUploadHandler());
                 }
             });
         }
@@ -209,9 +281,9 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
             mutableData.child("username").setValue(userProfile.username);
-            mutableData.child("password").setValue(userProfile.password);
             mutableData.child("height").setValue(userProfile.height);
             mutableData.child("weight").setValue(userProfile.weight);
+            mutableData.child("email").setValue(userProfile.email);
             mutableData.child("photo").setValue(userProfile.photoPath);
             return Transaction.success(mutableData);
         }
