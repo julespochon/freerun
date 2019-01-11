@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -62,7 +61,7 @@ public class MyProfileFragment extends Fragment {
         fragmentView = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
         Intent intent=getActivity().getIntent();
-        userID = intent.getExtras().getString("userProfile");
+        userID = intent.getExtras().getString(USER_ID);
         readUserProfile();
 
         return fragmentView;

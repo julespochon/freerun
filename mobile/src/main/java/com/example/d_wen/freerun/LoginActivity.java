@@ -26,6 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "EmailPassword";
+    public static final String USER_ID = "USER_ID";
 
     private static final int REGISTER_PROFILE = 1;
     private Profile userProfile = null;
@@ -93,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                                 userID=user.getUid();
                                 Intent intent=new Intent(LoginActivity.this,
                                         MainActivity.class);
-                                intent.putExtra("userProfile", userID);
+                                intent.putExtra(USER_ID, userID);
                                 startActivity(intent);
                             }else{
                                 Toast.makeText(LoginActivity.this, "Email not verified",
