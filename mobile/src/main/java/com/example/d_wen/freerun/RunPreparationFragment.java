@@ -75,6 +75,7 @@ public class RunPreparationFragment extends Fragment {
         // Inflate the layout for this fragment
         fragmentView = inflater.inflate(R.layout.fragment_run_preparation,
                 container, false);
+
         EditText paceEntry = fragmentView.findViewById(R.id.pace);
         EditText distanceEntry = fragmentView.findViewById(R.id.distance);
         final TextView runDuration = fragmentView.findViewById(R.id.calculatedTime);
@@ -82,17 +83,10 @@ public class RunPreparationFragment extends Fragment {
         paceEntry.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                if (s.length() > 0) {
-//                    int number = Integer.parseInt(s.toString());
-//                    aimedPace -= number;
-//                }
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 if(s.toString().isEmpty()){
@@ -111,17 +105,10 @@ public class RunPreparationFragment extends Fragment {
         distanceEntry.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                if (s.length() > 0) {
-//                    int number = Integer.parseInt(s.toString());
-//                    plannedDistance -= number;
-//                }
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 if(s.toString().isEmpty()){
