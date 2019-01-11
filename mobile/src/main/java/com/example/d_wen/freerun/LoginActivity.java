@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
                             userID=user.getKey();
                             Intent intent=new Intent(LoginActivity.this,
                                     MainActivity.class);
-                            intent.putExtra("userProfile", userID);
+                            intent.putExtra(MyProfileFragment.USER_ID, userID);
                             startActivity(intent);
                             break;
                         }
@@ -80,8 +80,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
-        Intent intentMainActivity = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intentMainActivity);
+//        Intent intentMainActivity = new Intent(LoginActivity.this, MainActivity.class);
+//        startActivity(intentMainActivity);
     }
 
     public void clickedRegisterButton (View view){

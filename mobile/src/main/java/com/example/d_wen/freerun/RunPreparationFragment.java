@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -12,7 +14,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
+
+import static com.example.d_wen.freerun.MyProfileFragment.USER_ID;
 
 
 /**
@@ -29,6 +42,8 @@ public class RunPreparationFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    public static final String RECORDIND_ID = "recID";
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -37,6 +52,7 @@ public class RunPreparationFragment extends Fragment {
     private View fragmentView;
     private int aimedPace = 0;
     private int plannedDistance = 0;
+    private String recordingKeySaved;
 
     public RunPreparationFragment() {
         // Required empty public constructor
@@ -129,11 +145,58 @@ public class RunPreparationFragment extends Fragment {
         startRunButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentRunPreparation = new Intent(getActivity(), RunActivity.class);
-                startActivity(intentRunPreparation);
+                Intent intent = getActivity().getIntent();
+                final String userID = intent.getExtras().getString(USER_ID);
+
+                final FirebaseDatabase database = FirebaseDatabase
+                        .getInstance();
+                final DatabaseReference profileGetRef = database.getReference
+                        ("profiles");
+                final DatabaseReference recordingRef = profileGetRef.child
+                        (userID).child("recordings").push();
+
+                final Switch useWatchSwitch = fragmentView.findViewById(R.id.switchWatch);
+                final Switch useHearRateBelt = fragmentView.findViewById(R.id.switchHearRate);
+                final Switch useVocalCoach = fragmentView.findViewById(R.id.switchVocalCoach);
+
+                recordingRef.runTransaction(new Transaction.Handler() {
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
+                        mutableData.child("datetime").setValue(System.currentTimeMillis());
+                        mutableData.child("aimed_pace").setValue(aimedPace);
+                        mutableData.child("planned_distance").setValue(plannedDistance);
+                        mutableData.child("use_vocal_coach").setValue(useVocalCoach.isChecked());
+                        mutableData.child("use_watch").setValue(useWatchSwitch.isChecked());
+                        mutableData.child("use_belt").setValue(useHearRateBelt.isChecked());
+
+                        recordingKeySaved = recordingRef.getKey();
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b,
+                                           @Nullable DataSnapshot dataSnapshot) {
+                        Toast.makeText(getContext(), "Activity entry started",
+                                Toast.LENGTH_SHORT);
+
+                        if (useWatchSwitch.isChecked()){
+                            startWearActivity();
+                        }
+
+                        Intent intentStartRunning = new Intent(getActivity(), RunActivity.class);
+                        intentStartRunning.putExtra(USER_ID, userID);
+                        intentStartRunning.putExtra(RECORDIND_ID, recordingKeySaved);
+                        startActivity(intentStartRunning);
+                    }
+                });
+
             }
         });
         return fragmentView;
+    }
+
+    private void startWearActivity() {
     }
 
     // TODO: Rename method, update argument and hook method into UI event

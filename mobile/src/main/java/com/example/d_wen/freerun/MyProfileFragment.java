@@ -33,6 +33,11 @@ import com.google.firebase.storage.StorageReference;
  * create an instance of this fragment.
  */
 public class MyProfileFragment extends Fragment {
+
+    public static final String USER_PROFILE = "USER_PROFILE";
+    public static final String USER_ID = "USER_ID";
+
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1="param1";
