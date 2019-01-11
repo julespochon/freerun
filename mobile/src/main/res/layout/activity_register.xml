@@ -14,7 +14,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="15dp"
-        app:srcCompat="@android:color/holo_blue_bright" />
+        app:srcCompat="@drawable/avatar" />
 
     <EditText
         android:id="@+id/usernameEdit"

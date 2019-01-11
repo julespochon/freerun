@@ -42,31 +42,38 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 profileRef.removeEventListener(this);
+
+                boolean notMember = true;
+                boolean wrongPassword = true;
                 for (final DataSnapshot user : dataSnapshot.getChildren()) {
                     String usernameDatabase=user.child("username").getValue
                             (String.class);
                     String passwordDatabase=user.child("password").getValue
                             (String.class);
                     if (usernameInput.equals(usernameDatabase)) {
+                        notMember=false;
                         if (passwordInput.equals(passwordDatabase)) {
+                            wrongPassword=false;
                             userID=user.getKey();
                             Intent intent=new Intent(LoginActivity.this,
                                     MainActivity.class);
                             intent.putExtra("userProfile", userID);
                             startActivity(intent);
                             break;
-                        } else {
-                            mTextView.setText(R.string.wrong_password);
-                            mTextView.setTextColor(Color.RED);
-                            break;
                         }
-
-                    } else {
-                        mTextView.setText(R.string.not_registered);
-                        mTextView.setTextColor(Color.RED);
-                        break;
                     }
                 }
+
+                if (notMember) {
+                    mTextView.setText(R.string.not_registered);
+                    mTextView.setTextColor(Color.RED);
+                }
+
+                if(wrongPassword){
+                    mTextView.setText(R.string.wrong_password);
+                    mTextView.setTextColor(Color.RED);
+                }
+
             }
 
             @Override
