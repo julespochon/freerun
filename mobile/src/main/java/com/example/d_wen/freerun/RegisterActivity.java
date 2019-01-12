@@ -4,13 +4,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,14 +19,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.EmailAuthProvider;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -38,22 +48,305 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity  {
 
     private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
     private static final DatabaseReference profileGetRef = database.getReference("profiles");
-    private static final String COLOR= "COLOR";
-    private static DatabaseReference profileRef = profileGetRef.push();
+    private static final String TAG = "EmailPassword";
 
     private static final int PICK_IMAGE = 1;
 
     private File imageFile;
     private Profile userProfile;
+    private String userID;
+    private boolean changePassword;
+    private boolean newUser = true;
+
+
+    private FirebaseAuth mAuth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        mAuth = FirebaseAuth.getInstance();
+
+        Intent intent = getIntent();
+        if (intent.getExtras() != null) {
+            newUser = false;
+            userID = intent.getExtras().getString(MyProfileFragment.USER_ID);
+            changePassword = intent.getExtras().getBoolean(MyProfileFragment.CHANGE_PASSWORD);
+            if (changePassword){
+                displayPasswordAndEmail();
+            }else {
+                fetchDataFromFirebase();
+            }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_clear:
+                clearUser();
+                break;
+            case R.id.action_validate:
+                if (!newUser){
+                    if (changePassword){
+                        reauthenticate();
+                        updateEmailAndPassword();
+                    }else {
+                        editUser();
+                        updateProfile();
+                    }
+                }else {
+                    editUser();
+                    createAccount();
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void createAccount() {
+        String email = userProfile.email;
+        String password = userProfile.password;
+
+        Log.d(TAG, "createAccount:" + email);
+
+        if(TextUtils.isEmpty(email) || TextUtils.isEmpty(password)){
+            Toast.makeText(RegisterActivity.this, "Fields are empty",
+                    Toast.LENGTH_SHORT).show();
+        }else {
+            // [START create_user_with_email]
+            mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Log.d(TAG, "createUserWithEmail:success");
+
+                                addProfileToFirebaseDB();
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                sendEmailVerification(user);
+
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                                Toast.makeText(RegisterActivity.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+            // [END create_user_with_email]
+        }
+    }
+
+    private void sendEmailVerification(final FirebaseUser user) {
+
+        // Send verification email
+        // [START send_email_verification]
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Toast.makeText(RegisterActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e(TAG, "sendEmailVerification", task.getException());
+                            Toast.makeText(RegisterActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        // [END_EXCLUDE]
+                    }
+                });
+        // [END send_email_verification]
+    }
+
+    public void updateProfile() {
+        // [START update_email]
+        addProfileToFirebaseDB();
+    }
+
+    public void reauthenticate() {
+        // [START reauthenticate]
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        TextView email = findViewById(R.id.emailEdit);
+        String oldEmail = email.getText().toString();
+        TextView password = findViewById(R.id.passwordEdit);
+        String oldPassword = password.getText().toString();
+
+        if(TextUtils.isEmpty(oldEmail) || TextUtils.isEmpty(oldPassword)) {
+            Toast.makeText(RegisterActivity.this, "Fields are empty",
+                    Toast.LENGTH_SHORT).show();
+        }else {
+            // Get auth credentials from the user for re-authentication.
+            AuthCredential credential=EmailAuthProvider
+                    .getCredential(oldEmail, oldPassword);
+
+            // Prompt the user to re-provide their sign-in credentials
+            user.reauthenticate(credential)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "User re-authenticated.");
+                        }
+                    });
+            // [END reauthenticate]
+        }
+    }
+
+
+    public void updateEmailAndPassword() {
+        // [START update_email]
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        userProfile = new Profile();
+
+        TextView email = findViewById(R.id.usernameEdit);
+        String newEmail = email.getText().toString();
+
+        TextView emailOld = findViewById(R.id.usernameEdit);
+        String oldEmail = emailOld.getText().toString();
+
+        TextView password = findViewById(R.id.heightEdit);
+        String newPassword = password.getText().toString();
+
+        TextView passwordOld = findViewById(R.id.passwordEdit);
+        String oldPassword = passwordOld.getText().toString();
+
+        if(!TextUtils.isEmpty(newEmail)) {
+            userProfile.email = newEmail;
+            user.updateEmail(newEmail)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "User email address updated.");
+                            }
+                        }
+                    });
+        }else{
+            userProfile.email = oldEmail;
+        }
+        // [END update_email]
+        // [START update_password]
+        if(!TextUtils.isEmpty(newPassword)) {
+            userProfile.password = newPassword;
+            user.updatePassword(newPassword)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "User password updated.");
+                            }
+                        }
+                    });
+        }else{
+            userProfile.password = oldPassword;
+        }
+        // [END update_password]
+
+        if (newEmail.equals(oldEmail)) {
+            sendEmailVerification(user);
+            profileGetRef.child(userID).child("email").setValue(newEmail);
+        }
+        sendIntentToLogin();
+    }
+
+    private void fetchDataFromFirebase() {
+        final TextView emailTextView = findViewById(R.id.emailEdit);
+        final TextView usernameTextView = findViewById(R.id.usernameEdit);
+        final TextView passwordTextView = findViewById(R.id.passwordEdit);
+        final TextView heightTextView = findViewById(R.id.heightEdit);
+        final TextView weightTextView = findViewById(R.id.weightEdit);
+
+        profileGetRef.child(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String user_db = dataSnapshot.child("username").getValue(String.class);
+                String email_db = dataSnapshot.child("email").getValue(String.class);
+                int height_db = dataSnapshot.child("height").getValue(int.class);
+                float weight_db = dataSnapshot.child("weight").getValue(float.class);
+                String photo = dataSnapshot.child("photo").getValue(String.class);
+
+                emailTextView.setText(email_db);
+                usernameTextView.setText(user_db);
+                heightTextView.setText(String.valueOf(height_db));
+                weightTextView.setText(String.valueOf(weight_db));
+
+                emailTextView.setEnabled(false);
+                passwordTextView.setVisibility(View.GONE);
+
+                //  Reference to an image file in Firebase Storage
+                StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
+                        (photo);
+                storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        final Bitmap selectedImage = BitmapFactory.decodeByteArray(bytes, 0,
+                                bytes.length);
+                        ImageView imageView = findViewById(R.id.userImage);
+                        imageView.setImageBitmap(selectedImage);
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public void displayPasswordAndEmail() {
+
+        final TextView emailTextView = findViewById(R.id.emailEdit);
+        final TextView usernameTextView = findViewById(R.id.usernameEdit);
+        final TextView passwordTextView = findViewById(R.id.passwordEdit);
+        final TextView heightTextView = findViewById(R.id.heightEdit);
+        final TextView weightTextView = findViewById(R.id.weightEdit);
+
+        profileGetRef.child(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String photo = dataSnapshot.child("photo").getValue(String.class);
+
+                emailTextView.setHint("Email");
+                usernameTextView.setHint("New email");
+                usernameTextView.setInputType(InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                passwordTextView.setHint("Password");
+                heightTextView.setHint("New password");
+                heightTextView.setInputType(InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                weightTextView.setVisibility(View.GONE);
+
+                //  Reference to an image file in Firebase Storage
+                StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
+                        (photo);
+                storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        final Bitmap selectedImage = BitmapFactory.decodeByteArray(bytes, 0,
+                                bytes.length);
+                        ImageView imageView = findViewById(R.id.userImage);
+                        imageView.setImageBitmap(selectedImage);
+                    }
+                });
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public void chooseImage(View view) {
@@ -112,10 +405,23 @@ public class RegisterActivity extends AppCompatActivity {
     private void editUser() {
         TextView username = findViewById(R.id.usernameEdit);
         TextView password = findViewById(R.id.passwordEdit);
+
+        if (newUser) {
+            int length=password.length();
+            if (length < 6) {
+                Toast.makeText(RegisterActivity.this,
+                        "Password to short, minimum 6 character", Toast.LENGTH_LONG).show();
+            }
+        }
+
         userProfile = new Profile(username.getText().toString(), password.getText().toString());
 
         TextView height = findViewById(R.id.heightEdit);
         TextView weight = findViewById(R.id.weightEdit);
+        TextView email = findViewById(R.id.emailEdit);
+
+        userProfile.email = email.getText().toString();
+
         try {
             userProfile.height = Integer.valueOf(height.getText().toString());
         } catch (NumberFormatException e) {
@@ -137,20 +443,6 @@ public class RegisterActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_register_activity, menu);
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_clear:
-                clearUser();
-                break;
-            case R.id.action_validate:
-                editUser();
-                addProfileToFirebaseDB();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void clearUser() {
@@ -177,7 +469,8 @@ public class RegisterActivity extends AppCompatActivity {
         byte[] data = baos.toByteArray();
 
             StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-            StorageReference photoRef = storageRef.child("photos").child(profileRef.getKey() + ".jpg");
+            StorageReference photoRef = storageRef.child("photos").child(profileGetRef.
+                    child(FirebaseAuth.getInstance().getCurrentUser().getUid()).getKey() + ".jpg");
             UploadTask uploadTask = photoRef.putBytes(data);
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -187,8 +480,6 @@ public class RegisterActivity extends AppCompatActivity {
                             .LENGTH_SHORT).show();
                 }
             }).addOnSuccessListener(new PhotoUploadSuccessListener());
-
-
     }
 
     private class PhotoUploadSuccessListener implements OnSuccessListener<UploadTask.TaskSnapshot> {
@@ -198,7 +489,8 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(final Uri uri) {
                     userProfile.photoPath = uri.toString();
-                    profileRef.runTransaction(new ProfileDataUploadHandler());
+                    profileGetRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                            runTransaction(new ProfileDataUploadHandler());
                 }
             });
         }
@@ -209,9 +501,9 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public Transaction.Result doTransaction(@NonNull MutableData mutableData) {
             mutableData.child("username").setValue(userProfile.username);
-            mutableData.child("password").setValue(userProfile.password);
             mutableData.child("height").setValue(userProfile.height);
             mutableData.child("weight").setValue(userProfile.weight);
+            mutableData.child("email").setValue(userProfile.email);
             mutableData.child("photo").setValue(userProfile.photoPath);
             return Transaction.success(mutableData);
         }
@@ -222,16 +514,20 @@ public class RegisterActivity extends AppCompatActivity {
             if (b) {
                 Toast.makeText(RegisterActivity.this, R.string.registration_success, Toast
                         .LENGTH_SHORT).show();
+                sendIntentToLogin();
 
-                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                intent.putExtra("userProfile", userProfile);
-                setResult(AppCompatActivity.RESULT_OK, intent);
-                finish();
             } else {
                 Toast.makeText(RegisterActivity.this, R.string.registration_failed, Toast
                         .LENGTH_SHORT).show();
             }
         }
+    }
+
+    private void sendIntentToLogin(){
+        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+        intent.putExtra("userProfile", userProfile);
+        setResult(AppCompatActivity.RESULT_OK, intent);
+        finish();
     }
 }
 
