@@ -53,13 +53,6 @@
                 android:onClick="clickedRegisterButton"
                 android:text="Register" />
 
-            <Button
-                android:id="@+id/buttonBypass"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Yo!"
-                android:onClick="bypass"/>
-
         </LinearLayout>
 
 </LinearLayout>

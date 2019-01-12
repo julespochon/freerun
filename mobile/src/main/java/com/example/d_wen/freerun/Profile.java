@@ -25,6 +25,10 @@ public class Profile implements Serializable {
         this.password = password;
     }
 
+    public Profile(){
+
+    }
+
     DataMap toDataMap() {
         DataMap dataMap = new DataMap();
         dataMap.putString("username", username);

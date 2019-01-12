@@ -36,6 +36,7 @@ import java.util.List;
 
 public class WearService extends WearableListenerService {
 
+    public static final String HEART_RATE = "HEART_RATE";
     // Tag for Logcat
     private static final String TAG = "WearService";
 
@@ -68,6 +69,12 @@ public class WearService extends WearableListenerService {
             case EXAMPLE_ASSET:
                 putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_asset);
                 putDataMapRequest.getDataMap().putAsset(BuildConfig.W_some_other_key, (Asset) intent.getParcelableExtra(IMAGE));
+                sendPutDataMapRequest(putDataMapRequest);
+                break;
+            case HEART_RATE:
+                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_heart_rate_path);
+                putDataMapRequest.getDataMap().putInt(BuildConfig.W_heart_rate_key, intent
+                        .getIntExtra(HEART_RATE, -1));
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
             default:
@@ -218,6 +225,10 @@ public class WearService extends WearableListenerService {
                     case BuildConfig.W_mainactivity:
                         startIntent = new Intent(this, MainActivity.class);
                         break;
+                    case BuildConfig.W_runningrecordingactivity:
+                        Log.d(TAG, "Start running recording message received");
+                        startIntent = new Intent(this, RunningRecordingActivity.class);
+                        break;
                 }
 
                 if (startIntent == null) {
@@ -226,6 +237,16 @@ public class WearService extends WearableListenerService {
                 }
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(startIntent);
+                break;
+            case BuildConfig.W_path_stop_activity:
+                switch (data) {
+                    case BuildConfig.W_runningrecordingactivity:
+                        Intent intentStop = new Intent();
+                        intentStop.setAction(RunningRecordingActivity.STOP_ACTIVITY);
+                        LocalBroadcastManager.getInstance(WearService.this).sendBroadcast
+                                (intentStop);
+                        break;
+                }
                 break;
             case BuildConfig.W_path_acknowledge:
                 Log.v(TAG, "Received acknowledgment");
@@ -335,6 +356,6 @@ public class WearService extends WearableListenerService {
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET
+        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, HEART_RATE,
     }
 }

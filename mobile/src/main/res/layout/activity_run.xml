@@ -6,16 +6,88 @@
     android:layout_height="match_parent"
     tools:context=".RunActivity">
 
+    <LinearLayout
+        android:id="@+id/linearLiveContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/exerciseDateTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Date and time: "
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/heartRate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Heart Rate"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Location"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <TextView
+                android:id="@+id/exerciseDateTimeLive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/heartRateLive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/locationLive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
+
     <Button
         android:id="@+id/button1"
-        style="?android:attr/buttonStyleSmall"
+        style="?android:attr/buttonStyleInset"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="177dp"
+        android:layout_marginTop="8dp"
         android:onClick="onClick"
-        android:text="Button" />
+        android:text="Button"
+        app:layout_constraintTop_toBottomOf="@id/linearLiveContainer"/>
 
     <EditText
         android:id="@+id/editText1"
@@ -23,11 +95,26 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/button1"
         android:layout_centerHorizontal="true"
-        android:ems="10"
+        android:ems="8"
         android:text="Start running now"
         app:layout_constraintTop_toBottomOf="@+id/button1">
 
         <requestFocus />
     </EditText>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="stopRecordingOnWear"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:backgroundTint="@color/colorPrimaryDarkFreeRun"
+        app:srcCompat="@drawable/ic_stop" />
 
 </android.support.constraint.ConstraintLayout>

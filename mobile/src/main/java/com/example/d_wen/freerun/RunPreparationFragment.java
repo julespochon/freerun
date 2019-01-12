@@ -204,7 +204,7 @@ public class RunPreparationFragment extends Fragment {
         Intent intentStartRec = new Intent(getActivity(), WearService.class);
         intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
         intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig
-                .W_recordingactivity);
+                .W_runningrecordingactivity);
         getActivity().startService(intentStartRec);
     }
 

@@ -49,7 +49,7 @@ public class MainActivity extends WearableActivity {
                     getTheme()));
         } else {
             mLayout.setBackgroundColor(getResources().getColor(
-                    android.R.color.white,
+                    android.R.color.black,
                     getTheme()));
         }
     }
