@@ -29,14 +29,26 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="trimmed" value="true" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
                                     </map>
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="imageAsset" value="D:\Documents\EPFL\App_smartphone_tablets\FreeRun\mobile\src\main\res\drawable\start_run_man_athlete.png" />
-                                      <entry key="outputName" value="welcomeRun" />
+                                      <entry key="assetType" value="IMAGE" />
+                                      <entry key="imageAsset" value="D:\Documents\EPFL\App_smartphone_tablets\FreeRun\mobile\src\main\res\drawable\Athletics_pictogram.png" />
+                                      <entry key="outputName" value="welcome_freerun" />
                                       <entry key="theme" value="CUSTOM" />
-                                      <entry key="themeColor" value="0064e5" />
+                                      <entry key="themeColor" value="0898e5" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -47,6 +59,29 @@
                         <option name="values">
                           <map>
                             <entry key="outputIconType" value="ACTIONBAR" />
+                          </map>
+                        </option>
+                      </PersistentState>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </PersistentState>
+          </value>
+        </entry>
+        <entry key="vectorWizard">
+          <value>
+            <PersistentState>
+              <option name="children">
+                <map>
+                  <entry key="vectorAssetStep">
+                    <value>
+                      <PersistentState>
+                        <option name="values">
+                          <map>
+                            <entry key="assetSourceType" value="FILE" />
+                            <entry key="outputName" value="ic_freerun_logo" />
+                            <entry key="sourceFile" value="D:\Documents\EPFL\App_smartphone_tablets\pictogramm_foundry\freerun_logo.svg" />
                           </map>
                         </option>
                       </PersistentState>

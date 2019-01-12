@@ -252,7 +252,7 @@ public class WearService extends WearableListenerService {
                 .addOnSuccessListener(new OnSuccessListener<Integer>() {
                     @Override
                     public void onSuccess(Integer integer) {
-                        Log.v(TAG, "Sent message to " + nodeId + ". Result = " + integer);
+                        Log.v(TAG, "FreeRun Sent message to " + nodeId + ". Result = " + integer);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -276,7 +276,7 @@ public class WearService extends WearableListenerService {
             public void onComplete(@NonNull Task<List<Node>> listTask) {
                 List<Node> nodes = listTask.getResult();
                 for (Node node : nodes) {
-                    Log.v(TAG, "Try to send message to a specific node");
+                    Log.v(TAG, "Try to send message to a specific node"+(node));
                     WearService.this.sendMessage(message, path, node.getId());
                 }
             }
@@ -335,6 +335,6 @@ public class WearService extends WearableListenerService {
 
     // Constants
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND
+        STARTACTIVITY, STOPACTIVITY,MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, PROFILE_SEND
     }
 }

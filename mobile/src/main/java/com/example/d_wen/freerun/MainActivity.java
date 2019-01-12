@@ -17,7 +17,6 @@ public class MainActivity extends AppCompatActivity implements MyProfileFragment
 
     private ActionBar toolbar;
 
-    // TODO: faire une app cool
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

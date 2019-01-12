@@ -3,17 +3,17 @@
 
     <item
         android:id="@+id/navigation_run"
-        android:icon="@drawable/run"
+        android:icon="@drawable/ic_running"
         android:title="@string/title_run" />
 
     <item
         android:id="@+id/navigation_profile"
-        android:icon="@drawable/profile"
+        android:icon="@drawable/ic_profile"
         android:title="@string/title_profile" />
 
     <item
         android:id="@+id/navigation_history"
-        android:icon="@drawable/historical"
+        android:icon="@drawable/ic_history"
         android:title="@string/title_history" />
 
 </menu>

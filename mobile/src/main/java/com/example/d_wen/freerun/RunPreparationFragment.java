@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +42,8 @@ public class RunPreparationFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private final String TAG = this.getClass().getSimpleName();
 
     public static final String RECORDIND_ID = "recID";
 
@@ -197,6 +200,12 @@ public class RunPreparationFragment extends Fragment {
     }
 
     private void startWearActivity() {
+        Log.d(TAG, "Entered smart watch hr reading");
+        Intent intentStartRec = new Intent(getActivity(), WearService.class);
+        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig
+                .W_recordingactivity);
+        getActivity().startService(intentStartRec);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

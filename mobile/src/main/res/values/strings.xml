@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name"> freerun </string>
+    <string name="app_name"> FREE RUN </string>
     <string name="title_activity_login"> LoginActivity </string>
     <string name="username"> Username </string>
     <string name="password">Password</string>
