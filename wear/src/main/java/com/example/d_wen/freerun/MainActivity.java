@@ -45,12 +45,10 @@ public class MainActivity extends WearableActivity {
     private void updateDisplay() {
         if (isAmbient()) {
             mLayout.setBackgroundColor(getResources().getColor(
-                    android.R.color.black,
-                    getTheme()));
+                    android.R.color.black, getTheme()));
         } else {
             mLayout.setBackgroundColor(getResources().getColor(
-                    android.R.color.black,
-                    getTheme()));
+                    android.R.color.black, getTheme()));
         }
     }
 }
