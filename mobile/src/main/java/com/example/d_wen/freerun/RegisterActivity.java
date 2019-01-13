@@ -48,20 +48,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class RegisterActivity extends AppCompatActivity  {
+public class RegisterActivity extends AppCompatActivity {
 
-    private static final FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private static final DatabaseReference profileGetRef = database.getReference("profiles");
-    private static final String TAG = "EmailPassword";
+    private static final FirebaseDatabase database=FirebaseDatabase.getInstance();
+    private static final DatabaseReference profileGetRef=database.getReference("profiles");
+    private static final String TAG="EmailPassword";
 
-    private static final int PICK_IMAGE = 1;
+    private static final int PICK_IMAGE=1;
 
     private File imageFile;
     private Profile userProfile;
     private String userID;
     private boolean changePassword;
-    private boolean newUser = true;
-
+    private boolean newUser=true;
 
     private FirebaseAuth mAuth;
 
@@ -70,16 +69,16 @@ public class RegisterActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        mAuth = FirebaseAuth.getInstance();
+        mAuth=FirebaseAuth.getInstance();
 
-        Intent intent = getIntent();
+        Intent intent=getIntent();
         if (intent.getExtras() != null) {
-            newUser = false;
-            userID = intent.getExtras().getString(MyProfileFragment.USER_ID);
-            changePassword = intent.getExtras().getBoolean(MyProfileFragment.CHANGE_PASSWORD);
-            if (changePassword){
+            newUser=false;
+            userID=intent.getExtras().getString(MyProfileFragment.USER_ID);
+            changePassword=intent.getExtras().getBoolean(MyProfileFragment.CHANGE_PASSWORD);
+            if (changePassword) {
                 displayPasswordAndEmail();
-            }else {
+            } else {
                 fetchDataFromFirebase();
             }
         }
@@ -92,15 +91,14 @@ public class RegisterActivity extends AppCompatActivity  {
                 clearUser();
                 break;
             case R.id.action_validate:
-                if (!newUser){
-                    if (changePassword){
+                if (!newUser) {
+                    if (changePassword) {
                         reauthenticate();
-                        updateEmailAndPassword();
-                    }else {
+                    } else {
                         editUser();
                         updateProfile();
                     }
-                }else {
+                } else {
                     editUser();
                     createAccount();
                 }
@@ -110,15 +108,15 @@ public class RegisterActivity extends AppCompatActivity  {
     }
 
     private void createAccount() {
-        String email = userProfile.email;
-        String password = userProfile.password;
+        String email=userProfile.email;
+        String password=userProfile.password;
 
         Log.d(TAG, "createAccount:" + email);
 
-        if(TextUtils.isEmpty(email) || TextUtils.isEmpty(password)){
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
             Toast.makeText(RegisterActivity.this, "Fields are empty",
                     Toast.LENGTH_SHORT).show();
-        }else {
+        } else {
             // [START create_user_with_email]
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -129,7 +127,7 @@ public class RegisterActivity extends AppCompatActivity  {
                                 Log.d(TAG, "createUserWithEmail:success");
 
                                 addProfileToFirebaseDB();
-                                FirebaseUser user = mAuth.getCurrentUser();
+                                FirebaseUser user=mAuth.getCurrentUser();
                                 sendEmailVerification(user);
 
                             } else {
@@ -176,17 +174,17 @@ public class RegisterActivity extends AppCompatActivity  {
 
     public void reauthenticate() {
         // [START reauthenticate]
-        FirebaseUser user = mAuth.getCurrentUser();
+        FirebaseUser user=mAuth.getCurrentUser();
 
-        TextView email = findViewById(R.id.emailEdit);
-        String oldEmail = email.getText().toString();
-        TextView password = findViewById(R.id.passwordEdit);
-        String oldPassword = password.getText().toString();
+        TextView email=findViewById(R.id.emailEdit);
+        String oldEmail=email.getText().toString();
+        TextView password=findViewById(R.id.passwordEdit);
+        String oldPassword=password.getText().toString();
 
-        if(TextUtils.isEmpty(oldEmail) || TextUtils.isEmpty(oldPassword)) {
+        if (TextUtils.isEmpty(oldEmail) || TextUtils.isEmpty(oldPassword)) {
             Toast.makeText(RegisterActivity.this, "Fields are empty",
                     Toast.LENGTH_SHORT).show();
-        }else {
+        } else {
             // Get auth credentials from the user for re-authentication.
             AuthCredential credential=EmailAuthProvider
                     .getCredential(oldEmail, oldPassword);
@@ -197,6 +195,7 @@ public class RegisterActivity extends AppCompatActivity  {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Log.d(TAG, "User re-authenticated.");
+                            updateEmailAndPassword();
                         }
                     });
             // [END reauthenticate]
@@ -208,57 +207,89 @@ public class RegisterActivity extends AppCompatActivity  {
         // [START update_email]
         FirebaseUser user = mAuth.getCurrentUser();
 
-        userProfile = new Profile();
+        userProfile=new Profile();
 
-        TextView email = findViewById(R.id.usernameEdit);
-        String newEmail = email.getText().toString();
+        updatePassword(user);
+    }
 
-        TextView emailOld = findViewById(R.id.usernameEdit);
-        String oldEmail = emailOld.getText().toString();
+    public void updatePassword(FirebaseUser user){
 
-        TextView password = findViewById(R.id.heightEdit);
-        String newPassword = password.getText().toString();
+    TextView password=findViewById(R.id.heightEdit);
+    String newPassword=password.getText().toString();
 
-        TextView passwordOld = findViewById(R.id.passwordEdit);
-        String oldPassword = passwordOld.getText().toString();
+    TextView passwordOld=findViewById(R.id.passwordEdit);
+    String oldPassword=passwordOld.getText().toString();
 
-        if(!TextUtils.isEmpty(newEmail)) {
-            userProfile.email = newEmail;
-            user.updateEmail(newEmail)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "User email address updated.");
-                            }
-                        }
-                    });
-        }else{
-            userProfile.email = oldEmail;
-        }
-        // [END update_email]
+    int length = newPassword.length();
+    if (TextUtils.isEmpty(newPassword)) {
+        userProfile.password=oldPassword;
+        updateEmail(user);
+
+    }else {
         // [START update_password]
-        if(!TextUtils.isEmpty(newPassword)) {
-            userProfile.password = newPassword;
+        if (length < 6){
+            Toast.makeText(RegisterActivity.this,
+                    "Password to short, minimum 6 character", Toast.LENGTH_LONG).show();
+        } else {
+            userProfile.password=newPassword;
             user.updatePassword(newPassword)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "User password updated.");
+                                FirebaseUser user=mAuth.getCurrentUser();
+                                updateEmail(user);
+                                Toast.makeText(RegisterActivity.this,
+                                        "Password updated",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(RegisterActivity.this,
+                                        "Password update failed",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
-        }else{
-            userProfile.password = oldPassword;
         }
         // [END update_password]
+    }
+    }
 
-        if (newEmail.equals(oldEmail)) {
-            sendEmailVerification(user);
-            profileGetRef.child(userID).child("email").setValue(newEmail);
+    private void updateEmail(FirebaseUser user) {
+        TextView email=findViewById(R.id.usernameEdit);
+        String newEmail=email.getText().toString();
+
+        TextView emailOld=findViewById(R.id.emailEdit);
+        String oldEmail=emailOld.getText().toString();
+
+        if (TextUtils.isEmpty(newEmail)) {
+            userProfile.email=oldEmail;
+            intentToLogin();
+        } else {
+            userProfile.email=newEmail;
+            if (newEmail.equals(oldEmail)){
+                intentToLogin();
+            }else {
+                user.updateEmail(newEmail)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "User email address updated.");
+                                    FirebaseUser newUser=mAuth.getCurrentUser();
+                                    sendEmailVerification(newUser);
+                                    intentToLogin();
+                                } else {
+                                    Toast.makeText(RegisterActivity.this,
+                                            "Email update failed",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+            }
         }
-        sendIntentToLogin();
+        // [END update_email]
+        profileGetRef.child(userID).child("email").setValue(newEmail);
     }
 
     private void fetchDataFromFirebase() {
@@ -272,17 +303,15 @@ public class RegisterActivity extends AppCompatActivity  {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String user_db = dataSnapshot.child("username").getValue(String.class);
-                String email_db = dataSnapshot.child("email").getValue(String.class);
                 int height_db = dataSnapshot.child("height").getValue(int.class);
                 float weight_db = dataSnapshot.child("weight").getValue(float.class);
                 String photo = dataSnapshot.child("photo").getValue(String.class);
 
-                emailTextView.setText(email_db);
                 usernameTextView.setText(user_db);
                 heightTextView.setText(String.valueOf(height_db));
                 weightTextView.setText(String.valueOf(weight_db));
 
-                emailTextView.setEnabled(false);
+                emailTextView.setVisibility(View.GONE);
                 passwordTextView.setVisibility(View.GONE);
 
                 //  Reference to an image file in Firebase Storage
@@ -447,12 +476,14 @@ public class RegisterActivity extends AppCompatActivity  {
 
     private void clearUser() {
         ImageView userImageView = findViewById(R.id.userImage);
+        TextView emailTextView = findViewById(R.id.emailEdit);
         TextView usernameTextView = findViewById(R.id.usernameEdit);
         TextView passwordTextView = findViewById(R.id.passwordEdit);
         TextView heightTextView = findViewById(R.id.heightEdit);
         TextView weightTextView = findViewById(R.id.weightEdit);
 
         userImageView.setImageResource(R.drawable.avatar);
+        emailTextView.setText("");
         usernameTextView.setText("");
         passwordTextView.setText("");
         heightTextView.setText("");
@@ -503,7 +534,6 @@ public class RegisterActivity extends AppCompatActivity  {
             mutableData.child("username").setValue(userProfile.username);
             mutableData.child("height").setValue(userProfile.height);
             mutableData.child("weight").setValue(userProfile.weight);
-            mutableData.child("email").setValue(userProfile.email);
             mutableData.child("photo").setValue(userProfile.photoPath);
             return Transaction.success(mutableData);
         }
@@ -514,7 +544,10 @@ public class RegisterActivity extends AppCompatActivity  {
             if (b) {
                 Toast.makeText(RegisterActivity.this, R.string.registration_success, Toast
                         .LENGTH_SHORT).show();
-                sendIntentToLogin();
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                intent.putExtra("userProfile", userProfile);
+                setResult(AppCompatActivity.RESULT_OK, intent);
+                finish();
 
             } else {
                 Toast.makeText(RegisterActivity.this, R.string.registration_failed, Toast
@@ -523,11 +556,10 @@ public class RegisterActivity extends AppCompatActivity  {
         }
     }
 
-    private void sendIntentToLogin(){
-        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+    private void intentToLogin() {
+        Intent intent=new Intent(RegisterActivity.this, LoginActivity.class);
         intent.putExtra("userProfile", userProfile);
-        setResult(AppCompatActivity.RESULT_OK, intent);
-        finish();
+        startActivity(intent);
     }
 }
 

@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -39,19 +40,31 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
+
+        Intent intent = getIntent();
+        userProfile = (Profile) intent.getSerializableExtra
+                ("userProfile");
+        if (userProfile != null) {
+            TextView username=findViewById(R.id.email);
+            username.setText(userProfile.email);
+            TextView password=findViewById(R.id.password);
+            password.setText(userProfile.password);
+        }
     }
 
     public void clickedLoginButton (View view){
-        final FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference profileGetRef = database.getReference("profiles");
 
-        final TextView mTextView = findViewById(R.id.loginMessage);
         final String email = ((EditText) findViewById(R.id.email))
                 .getText().toString();
         final String password = ((EditText) findViewById(R.id.password))
                 .getText().toString();
 
-        signIn(email, password);
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)){
+            Toast.makeText(LoginActivity.this, "Fields are empty",
+                    Toast.LENGTH_SHORT).show();
+        }else{
+            signIn(email, password);
+        }
     }
 
     public void clickedRegisterButton (View view){
