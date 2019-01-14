@@ -124,7 +124,7 @@ public class MyProfileFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+   @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
