@@ -23,6 +23,12 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,7 +42,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class RunActivity extends AppCompatActivity implements LocationListener {
+public class RunActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     public static final String RECEIVE_HEART_RATE = "RECEIVE_HEART_RATE";
     public static final String HEART_RATE = "HEART_RATE";
 
@@ -46,6 +52,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener {
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
     private DatabaseReference recordingRef;
+    private GoogleMap mMap;
 
     private TextView latituteField;
     private TextView longitudeField;
@@ -105,6 +112,12 @@ public class RunActivity extends AppCompatActivity implements LocationListener {
             latituteField.setText("Location not available");
             longitudeField.setText("Location not available");
         }
+
+        // Obtain the SupportMapFragment and get notified when the map is
+        // ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment)
+                getSupportFragmentManager().findFragmentById(R.id.GoogleMap);
+        mapFragment.getMapAsync(this);
 
         Intent intentFromPrep = getIntent();
         String userID = intentFromPrep.getStringExtra(MyProfileFragment.USER_ID);
@@ -230,9 +243,14 @@ public class RunActivity extends AppCompatActivity implements LocationListener {
             Log.d(TAG, "Location was changed");
             double lat = location.getLatitude();
             double lng = location.getLongitude();
-            latituteField.setText(String.valueOf(lat));
-            longitudeField.setText(String.valueOf(lng));
+            latituteField.setText("lat: "+String.valueOf(lat));
+            longitudeField.setText("long: "+String.valueOf(lng));
             lastKnownLocation = location;
+
+            //Update GoogleMaps location
+            LatLng currentLocation = new LatLng(lat, lng);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
+            mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location"));
         }
     }
 
@@ -249,6 +267,19 @@ public class RunActivity extends AppCompatActivity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         Log.d(TAG, "Provider was disabled");
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in the last known location and move the camera
+        LatLng currentLocation = new LatLng
+                (lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+        Log.d(TAG, "Current location: " + currentLocation);
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location"));
     }
 
 
