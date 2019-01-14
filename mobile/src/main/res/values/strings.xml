@@ -23,4 +23,7 @@
     <string name="edit_profile">Edit Profile</string>
     <string name="edit_password">Change password/email</string>
     <string name="edit_user">Change user profile</string>
+    <string name="hr_belt">Heart rate belt</string>
+    <string name="smartwatch">Smartwatch</string>
+    <string name="running">Running</string>
 </resources>
