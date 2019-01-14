@@ -28,18 +28,6 @@
         app:layout_constraintTop_toBottomOf="@+id/userImageValue" />
 
     <TextView
-        android:id="@+id/emailValue"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
-        android:maxLines="1"
-        android:singleLine="true"
-        android:textSize="24sp"
-        app:layout_constraintTop_toBottomOf="@+id/usernameValue"
-        app:layout_constraintLeft_toRightOf="@id/email"
-        app:layout_constraintRight_toRightOf="parent" />
-
-    <TextView
         android:id="@+id/heightValue"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -47,7 +35,7 @@
         android:maxLines="1"
         android:singleLine="true"
         android:textSize="24sp"
-        app:layout_constraintTop_toBottomOf="@+id/emailValue"
+        app:layout_constraintTop_toBottomOf="@+id/usernameValue"
         app:layout_constraintLeft_toRightOf="@id/Height"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -73,17 +61,6 @@
         app:layout_constraintRight_toLeftOf="@+id/usernameValue"
         app:layout_constraintTop_toTopOf="@+id/usernameValue"
         android:layout_marginLeft="10dp"/>
-
-    <TextView
-        android:id="@+id/email"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/emailValue"
-        app:layout_constraintRight_toLeftOf="@+id/emailValue"
-        android:layout_marginLeft="10dp"
-        android:textSize="24sp"
-        android:text="Email :" />
 
     <TextView
         android:id="@+id/Height"
