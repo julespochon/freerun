@@ -9,6 +9,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -50,7 +53,13 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_history, menu);
     }
 
     @Override
@@ -99,8 +108,6 @@ public class HistoryFragment extends Fragment {
 
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss", Locale
                     .getDefault());
-            ((TextView) row.findViewById(R.id.exerciseType)).setText(getItem(position)
-                    .exerciseType);
             ((TextView) row.findViewById(R.id.exerciseDateTime)).setText(formatter.format(new
                     Date(getItem(position).exerciseDateTime)));
             ((TextView) row.findViewById(R.id.exerciseDevice)).setText(getItem(position)
@@ -113,7 +120,6 @@ public class HistoryFragment extends Fragment {
     }
 
     public class Recording {
-        protected String exerciseType;
         protected long exerciseDateTime;
         protected boolean exerciseSmartWatch;
         protected boolean exerciseHRbelt;
@@ -125,12 +131,12 @@ public class HistoryFragment extends Fragment {
             adapter.clear();
             for (final DataSnapshot rec : dataSnapshot.getChildren()) {
                 final Recording recording = new Recording();
-                recording.exerciseType = rec.child("exercise_type").getValue().toString();
+
                 recording.exerciseDateTime = Long.parseLong(rec.child("datetime").getValue()
                         .toString());
-                recording.exerciseSmartWatch = Boolean.parseBoolean(rec.child("switch_watch")
+                recording.exerciseSmartWatch = Boolean.parseBoolean(rec.child("use_watch")
                         .getValue().toString());
-                recording.exerciseHRbelt = Boolean.parseBoolean(rec.child("switch_hr_belt")
+                recording.exerciseHRbelt = Boolean.parseBoolean(rec.child("use_belt")
                         .getValue().toString());
                 adapter.add(recording);
             }
@@ -140,6 +146,17 @@ public class HistoryFragment extends Fragment {
         public void onCancelled(DatabaseError databaseError) {
             Log.v(TAG, databaseError.toString());
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                databaseRef.child("profiles").child(idUser).child("recordings").removeValue();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

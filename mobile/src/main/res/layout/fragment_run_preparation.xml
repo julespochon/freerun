@@ -6,43 +6,184 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".RunPreparationFragment">
 
-    <Switch
-        android:id="@+id/WatchSwitch"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginTop="200dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginRight="32dp"
-        android:text="Smart Watch"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Switch
-        android:id="@+id/HeartRateSwitch"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginRight="32dp"
-        android:text="Heart Rate Belt"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/WatchSwitch" />
-
-    <Button
-        android:id="@+id/StartButton"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/HeartRateSwitch"
-        android:layout_marginTop="10dp"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25">
+
+        <TextView
+            android:id="@+id/runPreparationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prepare your run"
+            android:textAllCaps="false"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:fontFamily="sans-serif-smallcaps"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Switch
+            android:id="@+id/switchVocalCoach"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="32dp"
+            android:text="Run with vocal coach"
+            app:layout_constraintEnd_toEndOf="@id/runPreparationTitle"
+            app:layout_constraintStart_toStartOf="@id/runPreparationTitle"
+            app:layout_constraintTop_toBottomOf="@+id/runPreparationTitle" />
+
+        <Switch
+            android:id="@+id/switchWatch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="Run with Smartwatch"
+            app:layout_constraintEnd_toEndOf="@id/runPreparationTitle"
+            app:layout_constraintStart_toStartOf="@id/runPreparationTitle"
+            app:layout_constraintTop_toBottomOf="@id/switchVocalCoach" />
+
+        <Switch
+            android:id="@+id/switchHearRate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="Run with Polar belt"
+            app:layout_constraintEnd_toEndOf="@id/runPreparationTitle"
+            app:layout_constraintStart_toStartOf="@id/runPreparationTitle"
+            app:layout_constraintTop_toBottomOf="@id/switchWatch" />
+
+        <LinearLayout
+            android:id="@+id/linearLayoutPace"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:focusableInTouchMode="true"
+            app:layout_constraintStart_toStartOf="@id/switchHearRate"
+            app:layout_constraintTop_toBottomOf="@+id/switchHearRate">
+
+            <!-- :nextFocusUp and :nextFocusLeft have been set to the id of this component
+            to prevent the dummy from receiving focus again -->
+            <!--AutoCompleteTextView android:id="@+id/autotext"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:nextFocusUp="@id/autotext"
+                android:nextFocusLeft="@id/autotext"/-->
+
+            <TextView
+                android:id="@+id/aimedPace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aimed pace [min/km] :"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <AutoCompleteTextView
+                android:id="@+id/pace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginLeft="8dp"
+                android:ems="5"
+                android:hint="(averaged)"
+                android:inputType="number"
+                android:textSize="14sp"
+                android:nextFocusUp="@id/pace"
+                android:nextFocusDown="@id/pace"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayoutDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:focusableInTouchMode="true"
+            app:layout_constraintStart_toStartOf="@id/linearLayoutPace"
+            app:layout_constraintTop_toBottomOf="@id/linearLayoutPace">
+
+            <TextView
+                android:id="@+id/plannedDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Planned Distance [km] :"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/aimedPace" />
+
+            <EditText
+                android:id="@+id/distance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="5"
+                android:inputType="number"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pace" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayoutTime"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="@id/linearLayoutDistance"
+            app:layout_constraintTop_toBottomOf="@id/linearLayoutDistance">
+
+            <TextView
+                android:id="@+id/expectedTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Expected run duration [h:min] :" />
+
+            <TextView
+                android:id="@+id/calculatedTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/runButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/title_run"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/linearLayoutTime"
+            app:layout_constraintEnd_toEndOf="@id/linearLayoutTime"
+            app:layout_constraintTop_toBottomOf="@id/linearLayoutTime"/>
+
+
+    </android.support.constraint.ConstraintLayout>
+
 </android.support.constraint.ConstraintLayout>

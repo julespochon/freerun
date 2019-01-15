@@ -61,8 +61,17 @@ public class RegisterActivity extends AppCompatActivity {
     private String userID;
     private boolean changePassword;
     private boolean newUser=true;
+    private Uri savedImageUri;
 
     private FirebaseAuth mAuth;
+
+    private String savedEmail;
+    private String savedUsername;
+    private String savedPassword;
+    private String savedWeight;
+    private String savedHeight;
+
+
 
 
     @Override
@@ -81,6 +90,32 @@ public class RegisterActivity extends AppCompatActivity {
             } else {
                 fetchDataFromFirebase();
             }
+        }
+
+        if (savedInstanceState != null) {
+            savedImageUri = savedInstanceState.getParcelable("ImageUri");
+            if (savedImageUri != null) {
+                try {
+                    InputStream imageStream=getContentResolver().openInputStream( savedImageUri );
+                    final Bitmap selectedImage=BitmapFactory.decodeStream( imageStream );
+                    ImageView imageView=findViewById( R.id.userImage );
+                    imageView.setImageBitmap( selectedImage );
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            TextView email = findViewById(R.id.emailEdit);
+            TextView username = findViewById(R.id.usernameEdit);
+            TextView password = findViewById(R.id.passwordEdit);
+            TextView weight = findViewById(R.id.weightEdit);
+            TextView height = findViewById(R.id.heightEdit);
+
+            email.setText(savedEmail);
+            username.setText(savedUsername);
+            password.setText(savedPassword);
+            weight.setText(savedWeight);
+            height.setText(savedHeight);
         }
     }
 
@@ -399,6 +434,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
             final InputStream imageStream;
             try {
+                savedImageUri = Uri.fromFile(imageFile);
                 imageStream = getContentResolver().openInputStream(Uri.fromFile(imageFile));
                 final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                 ImageView imageView = findViewById(R.id.userImage);
@@ -560,6 +596,24 @@ public class RegisterActivity extends AppCompatActivity {
         Intent intent=new Intent(RegisterActivity.this, LoginActivity.class);
         intent.putExtra("userProfile", userProfile);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("ImageUri", savedImageUri);
+
+        TextView email = findViewById(R.id.emailEdit);
+        TextView username = findViewById(R.id.usernameEdit);
+        TextView password = findViewById(R.id.passwordEdit);
+        TextView weight = findViewById(R.id.weightEdit);
+        TextView height = findViewById(R.id.heightEdit);
+
+        savedEmail = email.getText().toString();
+        savedUsername = username.getText().toString();
+        savedPassword = password.getText().toString();
+        savedWeight = weight.getText().toString();
+        savedHeight = height.getText().toString();
     }
 }
 
