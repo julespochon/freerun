@@ -30,4 +30,9 @@
     <string name="stats">Stats</string>
     <string name="friends">Friends</string>
     <string name="title_activity_maps">Map</string>
+    <string name="hr_belt">Heart rate belt</string>
+    <string name="smartwatch">Smartwatch</string>
+    <string name="running">Running</string>
+    <string name="delete_history">Delete history</string>
+    <string name="logout">Logout</string>
 </resources>

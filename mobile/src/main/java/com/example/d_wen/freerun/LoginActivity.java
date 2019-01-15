@@ -33,6 +33,8 @@ public class LoginActivity extends AppCompatActivity {
     private Profile userProfile = null;
     private String userID;
     private FirebaseAuth mAuth;
+    private String savedEmail;
+    private String savedPassword;
 
 
     @Override
@@ -49,6 +51,14 @@ public class LoginActivity extends AppCompatActivity {
             username.setText(userProfile.email);
             TextView password=findViewById(R.id.password);
             password.setText(userProfile.password);
+        }
+
+        if (savedInstanceState != null) {
+            TextView email = findViewById(R.id.email);
+            TextView password = findViewById(R.id.password);
+
+            email.setText(savedEmail);
+            password.setText(savedPassword);
         }
     }
 
@@ -123,6 +133,17 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
         // [END sign_in_with_email]
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        TextView email = findViewById(R.id.email);
+        TextView password = findViewById(R.id.password);
+
+        savedEmail = email.getText().toString();
+        savedPassword = password.getText().toString();
     }
 
 }
