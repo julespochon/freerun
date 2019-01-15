@@ -12,7 +12,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements MyProfileFragment.
-        OnFragmentInteractionListener, RunPreparationFragment.OnFragmentInteractionListener,
+        OnFragmentInteractionListener, LeaderboardFragment.OnFragmentInteractionListener,
+        RunPreparationFragment.OnFragmentInteractionListener,
         HistoryFragment.OnFragmentInteractionListener{
 
     private ActionBar toolbar;
@@ -52,6 +53,11 @@ public class MainActivity extends AppCompatActivity implements MyProfileFragment
                 case R.id.navigation_history:
                     toolbar.setTitle("History");
                     fragment=new HistoryFragment();
+                    loadFragment(fragment);
+                    return true;
+                case R.id.navigation_leaderboard:
+                    toolbar.setTitle("Leaderboard");
+                    fragment=new LeaderboardFragment();
                     loadFragment(fragment);
                     return true;
             }
