@@ -92,13 +92,14 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this
                 .getSystemService(Context.LOCATION_SERVICE);
-        lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
         if (locationManager != null) {
             try {
+                lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                 locationManager.requestLocationUpdates(LocationManager
-                        .NETWORK_PROVIDER, 0, 0, this);
+                        .NETWORK_PROVIDER, 400, 1, this);
                 locationManager.requestLocationUpdates(LocationManager.
-                        GPS_PROVIDER, 0, 0, this);
+                        GPS_PROVIDER, 400, 1, this);
                 Log.d(TAG, "Registered for location updates");
             } catch (Exception e) {
                 Log.w(TAG, "Could not request location updates");
@@ -184,6 +185,27 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         LocalBroadcastManager.getInstance(this).registerReceiver(heartRateBroadcastReceiver,
                 new IntentFilter(RECEIVE_HEART_RATE));
 
+        if (locationManager != null) {
+            try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                locationManager.requestLocationUpdates(LocationManager
+                        .NETWORK_PROVIDER, 400, 1, this);
+                locationManager.requestLocationUpdates(LocationManager.
+                        GPS_PROVIDER, 400, 1, this);
+                Log.d(TAG, "Registered for location updates");
+            } catch (Exception e) {
+                Log.w(TAG, "Could not request location updates");
+            }
+        }
         Log.d(TAG, "Activity resumes");
     }
 
@@ -273,13 +295,15 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in the last known location and move the camera
-        LatLng currentLocation = new LatLng
-                (lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-        Log.d(TAG, "Current location: " + currentLocation);
+        if (lastKnownLocation != null) {
+            // Add a marker in the last known location and move the camera
+            LatLng currentLocation = new LatLng
+                    (lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+            Log.d(TAG, "Current location: " + currentLocation);
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
-        mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 15));
+            mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location"));
+        }
     }
 
 
