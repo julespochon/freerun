@@ -549,6 +549,7 @@ public class RegisterActivity extends AppCompatActivity {
             }).addOnSuccessListener(new PhotoUploadSuccessListener());
     }
 
+
     private class PhotoUploadSuccessListener implements OnSuccessListener<UploadTask.TaskSnapshot> {
         @Override
         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
