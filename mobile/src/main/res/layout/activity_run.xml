@@ -49,10 +49,34 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/location"
+                android:id="@+id/longitude"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Location"
+                android:text="Longitude :"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/latitude"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Latitude : "
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Speed :"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/distance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Distance :"
                 android:textSize="18sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -96,6 +120,18 @@
                 android:layout_height="wrap_content"
                 android:text=""
                 android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/speedLive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/distanceLive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -147,7 +183,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
-        android:onClick="stopRecordingOnWear"
+        android:onClick="stopRecordingRun"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="32dp"

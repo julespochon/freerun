@@ -40,22 +40,26 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.android.SphericalUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.PriorityQueue;
 
 public class RunActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     public static final String RECEIVE_HEART_RATE = "RECEIVE_HEART_RATE";
     public static final String HEART_RATE = "HEART_RATE";
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+    private static final Double ONE_KM = 10.0;
 
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
     private ArrayList<Integer> hrWatchArrayList = new ArrayList<>();
     private ArrayList<Integer> hrBeltArrayList = new ArrayList<>();
+    private ArrayList<Integer> hrOnLocList = new ArrayList<>();
 
     private final String TAG = this.getClass().getSimpleName();
     private static final int TWO_MINUTES = 1000 * 60 * 2;
@@ -65,16 +69,20 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
     private TextView latituteField;
     private TextView longitudeField;
+    private TextView speedField;
+    private TextView distanceField;
     private LocationManager locationManager;
-    private String provider;
+    private ArrayList<LatLng> latLngsPath = new ArrayList<>();
+    private Double totalDistance;
     private Location lastKnownLocation;
-    private Criteria criteria;
+    private int totalKM = 0;
 
     private BluetoothLeService mBluetoothLeService;
     private String mDeviceAddress;
     private String mDeviceName;
     private boolean mConnected = false;
 
+    private boolean ttsEnable = false;
     private String text;
     private EditText et;
     private TextToSpeech tts;
@@ -124,12 +132,12 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         }
     };
 
+
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService
-                .ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
@@ -173,6 +181,8 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
         latituteField = (TextView) findViewById(R.id.latitudeLive);
         longitudeField = (TextView) findViewById(R.id.longitudeLive);
+        speedField = (TextView) findViewById(R.id.speedLive);
+        distanceField = (TextView) findViewById(R.id.distanceLive);
 
         //BLE
         final Intent intent = getIntent();
@@ -216,11 +226,15 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         }
         if (lastKnownLocation != null) {
             Log.d(TAG, "Found last location");
+            latituteField.setText(String.valueOf(lastKnownLocation.getLatitude()));
+            longitudeField.setText(String.valueOf(lastKnownLocation.getLongitude()));
             onLocationChanged(lastKnownLocation);
         } else {
             Log.d(TAG, "Location wasn't found");
-            latituteField.setText("Location not available");
-            longitudeField.setText("Location not available");
+            latituteField.setText("-");
+            longitudeField.setText("-");
+            speedField.setText("-");
+            distanceField.setText("-");
         }
 
         // Google map
@@ -244,7 +258,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String switchWatch = dataSnapshot.child("use_watch").getValue().toString();
                 String switchBelt = dataSnapshot.child("use_belt").getValue().toString();
-                String switchVocalCoach = dataSnapshot.child("use_vocal_coach").getValue().toString();
+                ttsEnable = (boolean) dataSnapshot.child("use_vocal_coach").getValue();
 
                 TextView exerciseDatetime = findViewById(R.id.exerciseDateTimeLive);
                 Long datetime = Long.parseLong(dataSnapshot.child("datetime").getValue().toString());
@@ -280,7 +294,8 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                     if (result == TextToSpeech.LANG_MISSING_DATA ||
                             result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("error", "This Language is not supported");
-                    } else {
+                    } else if (ttsEnable){
+                        text = ("Start running now.");
                         ConvertTextToSpeech();
                     }
                 } else
@@ -310,7 +325,11 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
         if (locationManager != null) {
             try {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.
+                        PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.
+                        PERMISSION_GRANTED) {
                     // TODO: Consider calling
                     //    ActivityCompat#requestPermissions
                     // here to request the missing permissions, and then overriding
@@ -371,7 +390,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
     private void ConvertTextToSpeech() {
         // TODO Auto-generated method stub
-        text = et.getText().toString();
+        // text = et.getText().toString();
         if (text == null || "".equals(text)) {
             text = "Content not available";
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
@@ -379,7 +398,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
     }
 
-    public void stopRecordingOnWear(View view) {
+    public void stopRecordingRun(View view) {
 
         Intent intentStopRec = new Intent(RunActivity.this, WearService.class);
         intentStopRec.setAction(WearService.ACTION_SEND.STOPACTIVITY.name());
@@ -388,7 +407,21 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         startService(intentStopRec);
 
         // TODO: save meaningful data
-        recordingRef.child("HR_watch").setValue(hrWatchArrayList).addOnSuccessListener
+        recordingRef.child("distance").setValue(SphericalUtil.computeLength(latLngsPath));
+
+        if (!hrWatchArrayList.isEmpty()) {
+            recordingRef.child("Heartrate").setValue(hrWatchArrayList);
+        }else{
+            recordingRef.child("Heartrate").setValue(hrBeltArrayList);
+        }
+        recordingRef.child("Locations_list").setValue(latLngsPath).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getApplicationContext(), "Saved GPS data successfully",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        recordingRef.child("Heartrate_LOC_list").setValue(hrOnLocList).addOnSuccessListener
                 (new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -404,19 +437,51 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         Log.d(TAG, "New location was found");
 
         if (isBetterLocation(location, lastKnownLocation)) {
+            // record location
             Log.d(TAG, "Location was changed");
             double lat = location.getLatitude();
             double lng = location.getLongitude();
-            latituteField.setText("lat: "+String.valueOf(lat));
-            longitudeField.setText("long: "+String.valueOf(lng));
+            latituteField.setText(String.valueOf(lat));
+            longitudeField.setText(String.valueOf(lng));
             lastKnownLocation = location;
+
+            // record distance and HR at that location
+            latLngsPath.add(new LatLng(lat, lng));
+            totalDistance = SphericalUtil.computeLength(latLngsPath);
+            distanceField.setText(String.valueOf(Math.round(totalDistance / 10.0)/100.0) + " km");
+
+//            if (ttsEnable) {
+//                if (Math.floor(totalDistance/ONE_KM) > totalKM){
+//                    newKMreached(totalDistance);
+//                }
+//            }
+
+            if (!hrWatchArrayList.isEmpty()){
+                hrOnLocList.add(hrWatchArrayList.get(hrWatchArrayList.size()-1)); // Priority on Watch
+            }else if (!hrBeltArrayList.isEmpty()){
+                hrOnLocList.add(hrBeltArrayList.get(hrBeltArrayList.size()-1));
+            }
+
+            // display speed
+            if(location.hasSpeed()){
+                speedField.setText(String.valueOf(location.getSpeed()) + " m/s");
+            }else {
+                speedField.setText("-");
+            }
 
             //Update GoogleMaps location
             LatLng currentLocation = new LatLng(lat, lng);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
             mMap.addMarker(new MarkerOptions().position(currentLocation).title("Current Location"));
+
         }
     }
+
+//    private void newKMreached(Double totalDistance) {
+//        totalKM = (int) Math.round(totalDistance/ONE_KM);
+//        text = "You reached another kilometer";
+//        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+//    }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -519,5 +584,4 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         return provider1.equals(provider2);
     }
 }
-
 
