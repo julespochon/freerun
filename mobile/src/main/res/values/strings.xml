@@ -35,4 +35,5 @@
     <string name="running">Running</string>
     <string name="delete_history">Delete history</string>
     <string name="logout">Logout</string>
+    <string name="join">Join</string>
 </resources>

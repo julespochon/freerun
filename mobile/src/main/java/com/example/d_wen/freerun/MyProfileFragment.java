@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,6 +17,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,10 +27,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -37,11 +43,19 @@ import static android.support.constraint.Constraints.TAG;
 
 public class MyProfileFragment extends Fragment {
 
+
+private static final FirebaseDatabase database=FirebaseDatabase.getInstance();
+    private static final DatabaseReference profileGetRef=database.getReference("profiles");
+
+
     public static final String USER_ID = "USER_ID";
     public static final String CHANGE_PASSWORD = "CHANGE_PASSWORD";
     public static final String USER_PROFILE = "USER_PROFILE";
 
     private static final int EDIT_PROFILE_INFO = 1;
+
+    private String groupName;
+    private String groupNameJoin;
 
 
     private String userID;
@@ -74,9 +88,155 @@ public class MyProfileFragment extends Fragment {
         userID = intent.getExtras().getString(USER_ID);
         readUserProfile();
 
+
+        Button createGroupButton = fragmentView.findViewById(R.id.createGroupeButton);
+        createGroupButton.setOnClickListener(new View.OnClickListener()
+
+        {
+            @Override
+            public void onClick (View v){
+                EditText groupNameEditText = fragmentView.findViewById(R.id.editTextGroup);
+                groupName = groupNameEditText.getText().toString();
+
+                 final DatabaseReference groupeGetRef=database.getReference("Groupes/"+groupName);
+                 final DatabaseReference groupeRef = groupeGetRef;
+                 profileGetRef.child(userID).runTransaction(new Transaction.Handler(){
+
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData
+                    mutableData) {
+
+                        mutableData.child("groupe").setValue(groupName);
+
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    }
+                });
+
+                groupeRef.runTransaction(new Transaction.Handler() {
+
+
+
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData
+                                                                    mutableData) {
+
+
+                        mutableData.child("group_name").setValue(groupName);
+                        mutableData.child("participants").child(userProfile.username);
+                        mutableData.child("Participants").child(userProfile.username).child("score_each_km").setValue("");
+                        mutableData.child("Participants").child(userProfile.username).child("score_in _tot").setValue("");
+
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    }
+                });
+            }
+        });
+
+       /* Button joinGroupButton = fragmentView.findViewById(R.id.joinButton);
+        joinGroupButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick (View va){
+                EditText groupNameEditText = fragmentView.findViewById(R.id.editTextGroupJoin);
+                groupNameJoin = groupNameEditText.getText().toString();
+
+
+
+                DatabaseReference groupeJoinGetRef=database.getReference("Groupes/"+groupNameJoin);
+                DatabaseReference groupeJoinRef = groupeJoinGetRef.push();
+
+                groupeJoinRef.runTransaction(new Transaction.Handler() {
+
+
+                    @NonNull
+                    @Override
+                    public Transaction.Result doTransaction(@NonNull MutableData
+                                                                    mutableData) {
+                        mutableData.child("participants").child(userProfile.username);
+                        mutableData.child("participants").child(userProfile.username).child("score_in _tot").setValue("");
+                        mutableData.child("Participants").child(userProfile.username).child("score_each_km").setValue("");
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                    }
+               });
+
+
+
+
+                // ...
+
+            }
+        });*/
+
         return fragmentView;
     }
 
+
+
+
+
+    /*public void findGroup(final String monGroupe){
+        groupeGetRef.orderByKey().addChildEventListener(new ChildEventListener() {
+
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String prevChildKey) {
+                if (monGroupe==dataSnapshot.getValue().toString()){
+
+                    groupeGetRef.runTransaction(new Transaction.Handler() {
+
+
+                        @NonNull
+                        @Override
+                        public Transaction.Result doTransaction(@NonNull MutableData
+                                                                        mutableData) {
+                            mutableData.child(monGroupe).child("participants").child("Participant1").setValue(userProfile.username);
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(@Nullable DatabaseError databaseError, boolean b, @Nullable DataSnapshot dataSnapshot) {
+                        }
+                    });
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+
+            // ...
+        });
+    }
+*/
     private void readUserProfile() {
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference profileRef = database.getReference("profiles");
@@ -173,6 +333,9 @@ public class MyProfileFragment extends Fragment {
         TextView weightTextView=fragmentView.findViewById(R.id.weightValue);
         weightTextView.setText(String.valueOf(userProfile.weight));
     }
+
+
+
 
     @Override
     public void onAttach(Context context) {
