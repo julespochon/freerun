@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".RunPreparationFragment">
-   <!-- android:background="@drawable/mybg_run_prep"-->
+    tools:context=".RunPreparationFragment"
+    android:background="@drawable/mybg_run_prep">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="wrap_content"

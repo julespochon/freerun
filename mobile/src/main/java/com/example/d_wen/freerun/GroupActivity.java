@@ -2,32 +2,36 @@ package com.example.d_wen.freerun;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+
 public class GroupActivity extends AppCompatActivity {
 
     final FirebaseDatabase database=FirebaseDatabase.getInstance();
     final DatabaseReference profileGetRef=database.getReference( "profiles" );
-    final DatabaseReference groupGetRef=database.getReference( "profiles" );
+    final DatabaseReference groupGetRef=database.getReference( "Groupes" );
 
     public static final String USER_ID = "USER_ID";
     public static final String SCORE = "SCORE";
     public static final String SCORE_KM = "SCORE_KM";
 
-
     private String userID;
     private String score;
     private String scoreKM;
-    private String groupID;
     private String groupName;
 
     @Override
@@ -37,71 +41,94 @@ public class GroupActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         userID = intent.getExtras().getString(USER_ID);
-        score = intent.getExtras().getString(SCORE);
-        scoreKM = intent.getExtras().getString(SCORE_KM);
+       // score = intent.getExtras().getString(SCORE);
+       // scoreKM = intent.getExtras().getString(SCORE_KM);
 
-        getGroupInfo();
-        getRunInformations();
+        readGroupName();
+        //getRunInformations();
+    }
+
+    private void readGroupName(){
+        profileGetRef.child(userID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                groupName = dataSnapshot.child("groupe").getValue(String.class);
+                getGroupInfo();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void getGroupInfo() {
 
-        profileGetRef.child(userID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                groupID = dataSnapshot.child("groupID").getValue(String.class);
-            }
+       TextView groupTitle = findViewById(R.id.groupTitleText);
+       groupTitle.setText(groupName);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        groupGetRef.child(groupID).addValueEventListener( new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                groupName = dataSnapshot.child("groupName").getValue(String.class);
-
-                TextView groupTitle = findViewById(R.id.groupTitleText);
-                groupTitle.setText(groupName);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        groupGetRef.child(groupID).child("groupName").child("participants")
-                .addValueEventListener( new ValueEventListener() {
+        groupGetRef.child(groupName).child("Participants").
+                addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                groupName = dataSnapshot.child("groupName").getValue(String.class);
+                ArrayList<TextView> groupMembers = new ArrayList<>();
+                ArrayList<TextView> memberScore = new ArrayList<>();
+                ArrayList<TextView> memberScoreKM = new ArrayList<>();
 
-                TextView groupTitle = findViewById(R.id.groupTitleText);
-                groupTitle.setText(groupName);
+                groupMembers.add( (TextView) findViewById(R.id.member1NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member2NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member3NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member4NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member5NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member6NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member7NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member8NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member9NameText) );
+                groupMembers.add( (TextView) findViewById(R.id.member10NameText) );
 
-                int[] groupMembers = {R.id.member1NameText, R.id.member2NameText,};
-                int[] memberScore = {R.id.member1ScoreText, R.id.member1ScoreText};
-                int[] memberScoreKM = {R.id.member1ScoreKMText, R.id.member2ScoreKMText};
+                memberScore.add( (TextView) findViewById(R.id.member1ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member2ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member3ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member4ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member5ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member6ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member7ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member8ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member9ScoreText));
+                memberScore.add( (TextView) findViewById(R.id.member10ScoreText));
+
+                memberScoreKM.add((TextView) findViewById(R.id.member1ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member2ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member3ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member4ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member5ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member6ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member7ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member8ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member9ScoreKMText));
+                memberScoreKM.add((TextView) findViewById(R.id.member10ScoreKMText));
 
                 int i = 0;
-                for (final DataSnapshot participants : dataSnapshot.getChildren()) {
-                    i = i+1;
-                    String groupMemberDatabase = participants.getValue(String.class);
-                    String memberScoreDatabase = participants.child("score").getValue(String.class);
-                    String memberDistanceDatabase = participants.child("score_km").
-                            getValue(String.class);
 
-                    TextView gm = findViewById(groupMembers[i]);
-                    TextView ms = findViewById(memberScore[i]);
-                    TextView md = findViewById(memberScoreKM[i]);
+                for (DataSnapshot childLoc : dataSnapshot.getChildren()){
+
+                    String groupMemberDatabase = childLoc.getKey();
+                    String memberScoreDatabase = childLoc.child("score_in _tot")
+                            .getValue(String.class);
+                    String memberDistanceDatabase = childLoc.child("score_each_km")
+                            .getValue(String.class);
+
+                    TextView gm = groupMembers.get( i );
+                    TextView ms = memberScore.get( i );
+                    TextView md = memberScoreKM.get( i );
 
                     gm.setText(groupMemberDatabase);
                     ms.setText(memberScoreDatabase);
                     md.setText(memberDistanceDatabase);
+
+                    i = i+1;
                 }
             }
 

@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,7 +43,6 @@ public class MyProfileFragment extends Fragment {
     public static final String USER_PROFILE = "USER_PROFILE";
 
     private static final int EDIT_PROFILE_INFO = 1;
-
 
     private String userID;
     private Profile userProfile;
