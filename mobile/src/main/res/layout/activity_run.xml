@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -34,10 +33,18 @@
                 android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/heartRate"
+                android:id="@+id/heartRateWatch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Heart Rate"
+                android:text="Watch heart rate"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/heartRateBelt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Belt heart rate"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -65,8 +72,14 @@
                 android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/heartRateLive"
+                android:id="@+id/heartRateWatchLive"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/heartRateBeltLive"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="18sp" />
 

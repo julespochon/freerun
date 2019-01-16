@@ -61,7 +61,7 @@
             app:layout_constraintTop_toBottomOf="@id/switchVocalCoach" />
 
         <Switch
-            android:id="@+id/switchHearRate"
+            android:id="@+id/switchHRBelt"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -78,8 +78,8 @@
             android:layout_marginTop="8dp"
             android:orientation="horizontal"
             android:focusableInTouchMode="true"
-            app:layout_constraintStart_toStartOf="@id/switchHearRate"
-            app:layout_constraintTop_toBottomOf="@+id/switchHearRate">
+            app:layout_constraintStart_toStartOf="@id/switchHRBelt"
+            app:layout_constraintTop_toBottomOf="@+id/switchHRBelt">
 
             <!-- :nextFocusUp and :nextFocusLeft have been set to the id of this component
             to prevent the dummy from receiving focus again -->

@@ -1,5 +1,6 @@
 package com.example.d_wen.freerun;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -57,6 +59,11 @@ public class RunPreparationFragment extends Fragment {
     private int plannedDistance = 0;
     private String recordingKeySaved;
 
+    private static final int BLE_CONNECTION = 1;
+    private String deviceAddress;
+    private Switch switchHRbelt;
+    private SwitchBeltOnCheckedChangeListener switchBeltOnCheckedChangeListener;
+
     public RunPreparationFragment() {
         // Required empty public constructor
     }
@@ -94,6 +101,10 @@ public class RunPreparationFragment extends Fragment {
         // Inflate the layout for this fragment
         fragmentView = inflater.inflate(R.layout.fragment_run_preparation,
                 container, false);
+
+        // BLE connection
+        switchBeltOnCheckedChangeListener = new SwitchBeltOnCheckedChangeListener();
+        switchHRbelt = fragmentView.findViewById(R.id.switchHRBelt);
 
         EditText paceEntry = fragmentView.findViewById(R.id.pace);
         EditText distanceEntry = fragmentView.findViewById(R.id.distance);
@@ -159,7 +170,7 @@ public class RunPreparationFragment extends Fragment {
                         (userID).child("recordings").push();
 
                 final Switch useWatchSwitch = fragmentView.findViewById(R.id.switchWatch);
-                final Switch useHearRateBelt = fragmentView.findViewById(R.id.switchHearRate);
+                final Switch useHearRateBelt = fragmentView.findViewById(R.id.switchHRBelt);
                 final Switch useVocalCoach = fragmentView.findViewById(R.id.switchVocalCoach);
 
                 recordingRef.runTransaction(new Transaction.Handler() {
@@ -190,6 +201,7 @@ public class RunPreparationFragment extends Fragment {
                         Intent intentStartRunning = new Intent(getActivity(), RunActivity.class);
                         intentStartRunning.putExtra(USER_ID, userID);
                         intentStartRunning.putExtra(RECORDIND_ID, recordingKeySaved);
+                        intentStartRunning.putExtra(RunActivity.EXTRAS_DEVICE_ADDRESS, deviceAddress);
                         startActivity(intentStartRunning);
                     }
                 });
@@ -246,5 +258,47 @@ public class RunPreparationFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private class SwitchBeltOnCheckedChangeListener implements CompoundButton
+            .OnCheckedChangeListener {
+        @Override
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            if (isChecked) {
+                Intent intent = new Intent(getActivity(), DeviceScanActivity.class);
+                startActivityForResult(intent, BLE_CONNECTION);
+            } else {
+                compoundButton.setText(R.string.hr_belt);
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        switchHRbelt.setOnCheckedChangeListener
+                (switchBeltOnCheckedChangeListener);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        switchHRbelt.setOnCheckedChangeListener(null);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Switch switchBelt = fragmentView.findViewById(R.id.switchHRBelt);
+        if (requestCode == BLE_CONNECTION && resultCode == Activity.RESULT_OK) {
+            String deviceName = data.getStringExtra(RunActivity.EXTRAS_DEVICE_NAME);
+            deviceAddress = data.getStringExtra(RunActivity.EXTRAS_DEVICE_ADDRESS);
+
+            switchBelt.setText(deviceName);
+        } else {
+            switchBelt.setChecked(false);
+            switchBelt.setText(R.string.hr_belt);
+        }
     }
 }

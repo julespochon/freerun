@@ -1,16 +1,21 @@
 package com.example.d_wen.freerun;
 
 import android.Manifest;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
+import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -45,9 +50,13 @@ import java.util.Locale;
 public class RunActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback {
     public static final String RECEIVE_HEART_RATE = "RECEIVE_HEART_RATE";
     public static final String HEART_RATE = "HEART_RATE";
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
-    private ArrayList<Integer> HRDataArrayList = new ArrayList<>();
+    private ArrayList<Integer> hrWatchArrayList = new ArrayList<>();
+    private ArrayList<Integer> hrBeltArrayList = new ArrayList<>();
+
     private final String TAG = this.getClass().getSimpleName();
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
@@ -61,9 +70,101 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     private Location lastKnownLocation;
     private Criteria criteria;
 
+    private BluetoothLeService mBluetoothLeService;
+    private String mDeviceAddress;
+    private String mDeviceName;
+    private boolean mConnected = false;
+
     private String text;
     private EditText et;
     private TextToSpeech tts;
+
+    // Code to manage Service lifecycle.
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
+
+    // Handles various events fired by the Service.
+    // ACTION_GATT_CONNECTED: connected to a GATT server.
+    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
+    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
+    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
+    //                        or notification operations.
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+                mConnected = true;
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                mConnected = false;
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
+                registerHeartRateServices(mBluetoothLeService.getSupportedGattServices());
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                displayData(intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0));
+            }
+        }
+    };
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService
+                .ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
+
+    private void registerHeartRateServices(List<BluetoothGattService> gattServices) {
+        if (gattServices == null) return;
+        String uuid = null;
+
+        // Loops through available GATT Services.
+        for (BluetoothGattService gattService : gattServices) {
+
+            List<BluetoothGattCharacteristic> gattCharacteristics =
+                    gattService.getCharacteristics();
+
+            // Loops through available Characteristics.
+            for (BluetoothGattCharacteristic gattCharacteristic :
+                    gattCharacteristics) {
+                uuid = gattCharacteristic.getUuid().toString();
+
+                // Find heart rate measurement (0x2A37)
+                if (SampleGattAttributes.lookup(uuid, "unknown")
+                        .equals("Heart Rate Measurement")) {
+                    mBluetoothLeService.setCharacteristicNotification(
+                            gattCharacteristic, true);
+                }
+            }
+        }
+    }
+
+    private void displayData(int intExtra) {
+        TextView hrBelt = findViewById(R.id.heartRateBeltLive);
+        hrBelt.setText(String.valueOf(intExtra));
+
+        hrBeltArrayList.add(intExtra);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +173,13 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
         latituteField = (TextView) findViewById(R.id.latitudeLive);
         longitudeField = (TextView) findViewById(R.id.longitudeLive);
+
+        //BLE
+        final Intent intent = getIntent();
+        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 (checkSelfPermission("android" + ""
@@ -89,6 +197,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                     ".permission.INTERNET"}, 0);
         }
 
+        // Location
         // Acquire a reference to the system Location Manager
         locationManager = (LocationManager) this
                 .getSystemService(Context.LOCATION_SERVICE);
@@ -114,6 +223,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
             longitudeField.setText("Location not available");
         }
 
+        // Google map
         // Obtain the SupportMapFragment and get notified when the map is
         // ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment)
@@ -145,9 +255,12 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                 String aimedPace = dataSnapshot.child("aimed_pace").getValue().toString();
                 String plannedDistance = dataSnapshot.child("planned_distance").getValue().toString();
 
-                TextView HeartRateWatch = findViewById(R.id.heartRateLive);
+                TextView HeartRateWatch = findViewById(R.id.heartRateWatchLive);
                 HeartRateWatch.setText(switchWatch);
-                // TODO: use switchBelt and others
+                TextView HeartRateBelt = findViewById(R.id.heartRateBeltLive);
+                HeartRateBelt.setText(switchBelt);
+
+                // TODO: use switchVocalCoach and others
             }
 
             @Override
@@ -181,7 +294,17 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     @Override
     protected void onResume() {
         super.onResume();
+        // HR from watch
         heartRateBroadcastReceiver = new HeartRateBroadcastReceiver();
+
+        //BLE
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+        }
+
+        // Location
         LocalBroadcastManager.getInstance(this).registerReceiver(heartRateBroadcastReceiver,
                 new IntentFilter(RECEIVE_HEART_RATE));
 
@@ -213,13 +336,31 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     protected void onPause() {
         // TODO Auto-generated method stub
         super.onPause();
+
+        // BLE
+        unregisterReceiver(mGattUpdateReceiver);
+
+        // TTS
         if (tts != null) {
             tts.stop();
             tts.shutdown();
         }
+
+        // Watch
         LocalBroadcastManager.getInstance(this).unregisterReceiver(heartRateBroadcastReceiver);
+
+        // Location
         Log.d(TAG, "Activity goes to pause");
         locationManager.removeUpdates(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mBluetoothLeService != null) {
+            unbindService(mServiceConnection);
+            mBluetoothLeService = null;
+        }
     }
 
     public void onClick(View v) {
@@ -246,7 +387,8 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                 .W_runningrecordingactivity);
         startService(intentStopRec);
 
-        recordingRef.child("HR_watch").setValue(HRDataArrayList).addOnSuccessListener
+        // TODO: save meaningful data
+        recordingRef.child("HR_watch").setValue(hrWatchArrayList).addOnSuccessListener
                 (new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -313,13 +455,13 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         public void onReceive(Context context, Intent intent) {
             // Show HR in a TextView
             int heartRateWatch = intent.getIntExtra(HEART_RATE, -1);
-            TextView hrTextView = findViewById(R.id.heartRateLive);
+            TextView hrTextView = findViewById(R.id.heartRateWatchLive);
             hrTextView.setText(String.valueOf(heartRateWatch));
 
             // TODO: Plot HR data
 
             // Add HR value to HR ArrayList
-            HRDataArrayList.add(heartRateWatch);
+            hrWatchArrayList.add(heartRateWatch);
         }
     }
 
