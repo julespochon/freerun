@@ -23,6 +23,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".GroupActivity"></activity>
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,8 +34,7 @@
         <activity android:name=".MainActivityFrag" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".RunActivity" />
-        <activity
-            android:name=".MainActivity"/>
+        <activity android:name=".MainActivity" />
 
         <activity android:name=".DeviceScanActivity"
             android:theme="@android:style/Theme.Holo.Light"/>
