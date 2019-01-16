@@ -571,6 +571,7 @@ public class RegisterActivity extends AppCompatActivity {
             mutableData.child("height").setValue(userProfile.height);
             mutableData.child("weight").setValue(userProfile.weight);
             mutableData.child("photo").setValue(userProfile.photoPath);
+            mutableData.child("total_score").setValue(0);
             return Transaction.success(mutableData);
         }
 

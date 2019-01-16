@@ -15,7 +15,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -65,6 +67,8 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
     private DatabaseReference recordingRef;
+    private DatabaseReference profileRef;
+    private double totScore;
     private GoogleMap mMap;
 
     private TextView latituteField;
@@ -86,6 +90,12 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     private String text;
     private EditText et;
     private TextToSpeech tts;
+
+
+    private long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
+    private int Seconds, Minutes, MilliSeconds ;
+    private Handler handler;
+    private TextView textViewChrono;
 
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -131,6 +141,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
             }
         }
     };
+
 
 
     private static IntentFilter makeGattUpdateIntentFilter() {
@@ -183,6 +194,11 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         longitudeField = (TextView) findViewById(R.id.longitudeLive);
         speedField = (TextView) findViewById(R.id.speedLive);
         distanceField = (TextView) findViewById(R.id.distanceLive);
+
+        StartTime = SystemClock.uptimeMillis();
+        handler = new Handler() ;
+        handler.postDelayed(runnable, 0);
+        textViewChrono = findViewById(R.id.stopWatchLive);
 
         //BLE
         final Intent intent = getIntent();
@@ -244,6 +260,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                 getSupportFragmentManager().findFragmentById(R.id.GoogleMap);
         mapFragment.getMapAsync(this);
 
+        // Firebase
         Intent intentFromPrep = getIntent();
         String userID = intentFromPrep.getStringExtra(MyProfileFragment.USER_ID);
         String recID = intentFromPrep.getStringExtra(RunPreparationFragment.RECORDIND_ID);
@@ -251,7 +268,20 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         // Get recording information from Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference profileGetRef = database.getReference("profiles");
+        profileRef = profileGetRef.child(userID).getRef();
         recordingRef = profileGetRef.child(userID).child("recordings").child(recID);
+
+        profileRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                totScore = dataSnapshot.child("total_score").getValue(Double.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         recordingRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -407,7 +437,12 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         startService(intentStopRec);
 
         // TODO: save meaningful data
-        recordingRef.child("distance").setValue(SphericalUtil.computeLength(latLngsPath));
+        double distance = SphericalUtil.computeLength(latLngsPath);
+        recordingRef.child("distance").setValue(distance);
+        recordingRef.child("duration").setValue(MillisecondTime);
+        double score = (distance * distance/(MillisecondTime/100));
+        recordingRef.child("score").setValue(score);
+        profileRef.child("total_score").setValue(totScore+score);
 
         if (!hrWatchArrayList.isEmpty()) {
             recordingRef.child("Heartrate").setValue(hrWatchArrayList);
@@ -583,5 +618,31 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         }
         return provider1.equals(provider2);
     }
+
+    public Runnable runnable = new Runnable() {
+
+        public void run() {
+
+            MillisecondTime = SystemClock.uptimeMillis() - StartTime;
+
+            UpdateTime = TimeBuff + MillisecondTime;
+
+            Seconds = (int) (UpdateTime / 1000);
+
+            Minutes = Seconds / 60;
+
+            Seconds = Seconds % 60;
+
+            MilliSeconds = (int) (UpdateTime/100 % 10);
+
+
+            textViewChrono.setText("" + Minutes + ":"
+                    + String.format("%02d", Seconds) + ":"
+                    + String.format("%d", MilliSeconds));
+
+            handler.postDelayed(this, 0);
+        }
+
+    };
 }
 

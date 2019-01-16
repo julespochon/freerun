@@ -1,6 +1,8 @@
 package com.example.d_wen.freerun;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -20,18 +22,30 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 
-public class HistoryFragment extends Fragment {
+public class HistoryFragment extends Fragment
+        implements OnMapReadyCallback {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -45,6 +59,11 @@ public class HistoryFragment extends Fragment {
     private DatabaseReference databaseRef;
     private String idUser;
 
+    private ArrayList<DatabaseReference> recRefList = new ArrayList<>();
+
+    private GoogleMap hMap;
+    private FragmentActivity myContext;
+
 
     public HistoryFragment() {
         // Required empty public constructor
@@ -54,6 +73,7 @@ public class HistoryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -68,6 +88,13 @@ public class HistoryFragment extends Fragment {
         // Inflate the layout for this fragment
         fragmentView = inflater.inflate(R.layout.fragment_history, container, false);
 
+        // Google map
+        // Obtain the SupportMapFragment and get notified when the map is
+        // ready to be used.
+//        SupportMapFragment mapFragment = (SupportMapFragment)
+//                getFragmentManager().findFragmentById(R.id.historyGoogleMap);
+//        mapFragment.getMapAsync(this);
+
         listView = fragmentView.findViewById(R.id.myHistoryList);
         adapter = new RecordingAdapter(getActivity(), R.layout.row_history);
         listView.setAdapter(adapter);
@@ -75,16 +102,48 @@ public class HistoryFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getContext(), "Exercise: " + ((TextView) view.findViewById(R.id
-                        .exerciseType)).getText().toString() + " on " + ((TextView) view
+                Toast.makeText(getContext(), "Exercise: " + i + " on " + ((TextView) view
                         .findViewById(R.id.exerciseDateTime)).getText().toString(), Toast
                         .LENGTH_SHORT).show();
+                recRefList.get(i).child("Locations_list").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        ArrayList<LatLng> latLngPath = new ArrayList<>();
+                        for (DataSnapshot childLoc : dataSnapshot.getChildren()){
+                            double latitude = childLoc.child("latitude").getValue(Double.class);
+                            double longitude = childLoc.child("longitude").getValue(Double.class);
+
+                            // Create LatLng for each locations
+                            latLngPath.add( new LatLng(latitude, longitude));
+                        }
+//                        GenericTypeIndicator<List<LatLng>> t = new GenericTypeIndicator<List<LatLng>>() {};
+//
+//                        List<LatLng> latLngPath = dataSnapshot.child("0").getValue(t);
+                        Log.d(TAG, "Map reference :"+hMap);
+                        drawRouteOnMap(hMap, latLngPath);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
             }
         });
 
         idUser = getActivity().getIntent().getExtras().getString(MyProfileFragment.USER_ID);
 
+
+
         return fragmentView;
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        hMap = googleMap;
+        Log.d(TAG, "The map reference is :"+hMap);
+
     }
 
     private class RecordingAdapter extends ArrayAdapter<Recording> {
@@ -114,6 +173,7 @@ public class HistoryFragment extends Fragment {
                     .exerciseSmartWatch ? "yes" : "no");
             ((TextView) row.findViewById(R.id.exerciseDevice2)).setText(getItem(position)
                     .exerciseHRbelt ? "yes" : "no");
+            ((TextView) row.findViewById(R.id.recordingReference)).setText(String.valueOf(getItem(position).recordingRef));
 
             return row;
         }
@@ -123,6 +183,9 @@ public class HistoryFragment extends Fragment {
         protected long exerciseDateTime;
         protected boolean exerciseSmartWatch;
         protected boolean exerciseHRbelt;
+        protected DatabaseReference recordingRef;
+        protected ArrayList<LatLng> latLongPath;
+        protected ArrayList<Integer> heartRateLOC;
     }
 
     private class MyFirebaseRecordingListener implements ValueEventListener {
@@ -132,6 +195,9 @@ public class HistoryFragment extends Fragment {
             for (final DataSnapshot rec : dataSnapshot.getChildren()) {
                 final Recording recording = new Recording();
 
+                recRefList.add(rec.getRef());
+                recording.recordingRef = rec.getRef();
+                //recording.latLongPath = (rec.child("Locations_list").get);
                 recording.exerciseDateTime = Long.parseLong(rec.child("datetime").getValue()
                         .toString());
                 recording.exerciseSmartWatch = Boolean.parseBoolean(rec.child("use_watch")
@@ -146,6 +212,17 @@ public class HistoryFragment extends Fragment {
         public void onCancelled(DatabaseError databaseError) {
             Log.v(TAG, databaseError.toString());
         }
+    }
+
+    private void drawRouteOnMap(GoogleMap map, List<LatLng> positions){
+        PolylineOptions options = new PolylineOptions().width(5).color(Color.RED).geodesic(true);
+        options.addAll(positions);
+        Log.d(TAG, "latlng:"+positions);
+        if(map!=null) {
+            Polyline polyline = map.addPolyline(options);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(positions.get(0),15));
+        }
+
     }
 
     @Override
@@ -177,6 +254,7 @@ public class HistoryFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
+        myContext=(FragmentActivity) context;
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener=(OnFragmentInteractionListener) context;
