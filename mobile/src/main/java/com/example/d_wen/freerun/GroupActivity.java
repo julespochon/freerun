@@ -33,6 +33,7 @@ public class GroupActivity extends AppCompatActivity {
     private String score;
     private String scoreKM;
     private String groupName;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,11 +42,11 @@ public class GroupActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         userID = intent.getExtras().getString(USER_ID);
-       // score = intent.getExtras().getString(SCORE);
-       // scoreKM = intent.getExtras().getString(SCORE_KM);
+        score = intent.getExtras().getString(SCORE);
+        scoreKM = intent.getExtras().getString(SCORE_KM);
 
         readGroupName();
-        //getRunInformations();
+        getRunInformations();
     }
 
     private void readGroupName(){
@@ -53,6 +54,7 @@ public class GroupActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 groupName = dataSnapshot.child("groupe").getValue(String.class);
+                userName = dataSnapshot.child("username").getValue(String.class);
                 getGroupInfo();
             }
 
@@ -164,7 +166,9 @@ public class GroupActivity extends AppCompatActivity {
     }
 
     public void clickOkButton (View view){
-        Intent intent = new Intent ( GroupActivity.this, LeaderboardFragment.class);
+        groupGetRef.child(groupName).child("Participants").child(userName).child("score_each_km").setValue(scoreKM);
+        groupGetRef.child(groupName).child("Participants").child(userName).child("score_in _tot").setValue(score);
+        Intent intent = new Intent ( GroupActivity.this, MainActivity.class);
         intent.putExtra(USER_ID,userID);
         startActivity(intent);
     }

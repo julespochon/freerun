@@ -36,7 +36,7 @@
                 android:id="@+id/heartRateWatch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Watch heart rate"
+                android:text="Watch heart rate : "
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -44,7 +44,7 @@
                 android:id="@+id/heartRateBelt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Belt heart rate"
+                android:text="Belt heart rate : "
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -149,36 +149,14 @@
         </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/button1"
-        style="?android:attr/buttonStyleInset"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="8dp"
-        android:onClick="onClick"
-        android:text="Button"
-        app:layout_constraintTop_toBottomOf="@id/linearLiveContainer"/>
 
-    <AutoCompleteTextView
-        android:id="@+id/editText1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button1"
-        android:layout_centerHorizontal="true"
-        android:ems="8"
-        android:text="Start running now"
-        android:nextFocusUp="@id/editText1"
-        android:nextFocusDown="@id/editText1"
-        app:layout_constraintTop_toBottomOf="@+id/button1"/>
 
 
     <FrameLayout
         android:id="@+id/MapFrame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/editText1"
+        app:layout_constraintTop_toBottomOf="@id/linearLiveContainer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

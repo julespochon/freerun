@@ -71,6 +71,17 @@
             app:layout_constraintStart_toStartOf="@id/runPreparationTitle"
             app:layout_constraintTop_toBottomOf="@id/switchWatch" />
 
+        <Switch
+            android:id="@+id/switchGroup"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:text="Run for group"
+            app:layout_constraintEnd_toEndOf="@id/runPreparationTitle"
+            app:layout_constraintStart_toStartOf="@id/runPreparationTitle"
+            app:layout_constraintTop_toBottomOf="@id/switchHRBelt"/>
+
         <LinearLayout
             android:id="@+id/linearLayoutPace"
             android:layout_width="wrap_content"
@@ -78,8 +89,8 @@
             android:layout_marginTop="8dp"
             android:orientation="horizontal"
             android:focusableInTouchMode="true"
-            app:layout_constraintStart_toStartOf="@id/switchHRBelt"
-            app:layout_constraintTop_toBottomOf="@+id/switchHRBelt">
+            app:layout_constraintStart_toStartOf="@id/switchGroup"
+            app:layout_constraintTop_toBottomOf="@+id/switchGroup">
 
             <!-- :nextFocusUp and :nextFocusLeft have been set to the id of this component
             to prevent the dummy from receiving focus again -->

@@ -103,7 +103,7 @@ public class LeaderboardFragment extends Fragment {
     public void sortUserScrore(){
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference scoresRef = database.getReference("profiles");
-        scoresRef.orderByChild("weight").limitToLast(3).addChildEventListener(new ChildEventListener() {
+        scoresRef.orderByChild("total_score").limitToLast(3).addChildEventListener(new ChildEventListener() {
             int i =0;
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String prevChildKey) {
@@ -116,7 +116,7 @@ public class LeaderboardFragment extends Fragment {
                     scoreChamp.weight = weight_db;*/
 
                     TextView scoreChamp1 = fragmentView.findViewById(R.id.textViewScoreChamp1);
-                    scoreChamp1.setText(String.valueOf(champ1.weight));
+                    scoreChamp1.setText(String.valueOf(champ1.total_score));
                     TextView nameChamp1 = fragmentView.findViewById(R.id.textViewChamp1);
                     nameChamp1.setText(champ1.username);
                     i=i+1;
@@ -130,7 +130,7 @@ public class LeaderboardFragment extends Fragment {
                     scoreChamp.weight = weight_db;*/
 
                     TextView scoreChamp2 = fragmentView.findViewById(R.id.textViewScoreChamp2);
-                    scoreChamp2.setText(String.valueOf(champ2.weight));
+                    scoreChamp2.setText(String.valueOf(champ2.total_score));
                     TextView nameChamp2 = fragmentView.findViewById(R.id.textViewChamp2);
                     nameChamp2.setText(champ2.username);
                     i=i+1;
@@ -146,7 +146,7 @@ public class LeaderboardFragment extends Fragment {
                     scoreChamp.weight = weight_db;*/
 
                     TextView scoreChamp3 = fragmentView.findViewById(R.id.textViewScoreChamp3);
-                    scoreChamp3.setText(String.valueOf(champ3.weight));
+                    scoreChamp3.setText(String.valueOf(champ3.total_score));
                     TextView nameChamp3 = fragmentView.findViewById(R.id.textViewChamp3);
                     nameChamp3.setText(champ3.username);
                     i=i+1;
@@ -190,18 +190,18 @@ public class LeaderboardFragment extends Fragment {
              @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                  String user_db = dataSnapshot.child("username").getValue(String.class);
-                 float weight_db = dataSnapshot.child("weight").getValue(float.class);
+                 double weight_db = dataSnapshot.child("total_score").getValue(double.class);
 
                  scoreProfile = new Profile();
                  scoreProfile.username = user_db;
-                 scoreProfile.weight = weight_db;
+                 scoreProfile.total_score = weight_db;
 
 
                  TextView playerName=fragmentView.findViewById(R.id.textViewPlayer);
                  playerName.setText(scoreProfile.username);
 
                  TextView playerWeight=fragmentView.findViewById(R.id.textViewScorePlayer);
-                 playerWeight.setText(String.valueOf(scoreProfile.weight));
+                 playerWeight.setText(String.valueOf(scoreProfile.total_score));
              }
             @Override
           public void onCancelled(@NonNull DatabaseError databaseError) {

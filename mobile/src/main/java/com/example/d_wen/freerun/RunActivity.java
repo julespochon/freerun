@@ -56,18 +56,23 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     public static final String HEART_RATE = "HEART_RATE";
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    private static final Double ONE_KM = 10.0;
+    public static final String RUN_FOR_GROUP = "RUN_FOR_GROUP";
+    private static final Double ONE_KM = 1000.0;
 
     private HeartRateBroadcastReceiver heartRateBroadcastReceiver;
     private ArrayList<Integer> hrWatchArrayList = new ArrayList<>();
     private ArrayList<Integer> hrBeltArrayList = new ArrayList<>();
     private ArrayList<Integer> hrOnLocList = new ArrayList<>();
+    private ArrayList<Integer> hrWatchArrayListSaved = new ArrayList<>();
+    private ArrayList<Integer> hrBeltArrayListSaved = new ArrayList<>();
+    private ArrayList<Integer> hrOnLocListSaved = new ArrayList<>();
 
     private final String TAG = this.getClass().getSimpleName();
     private static final int TWO_MINUTES = 1000 * 60 * 2;
 
     private DatabaseReference recordingRef;
     private DatabaseReference profileRef;
+    private String userID;
     private double totScore;
     private GoogleMap mMap;
 
@@ -77,6 +82,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     private TextView distanceField;
     private LocationManager locationManager;
     private ArrayList<LatLng> latLngsPath = new ArrayList<>();
+    private ArrayList<LatLng> latLngsPathSaved = new ArrayList<>();
     private Double totalDistance;
     private Location lastKnownLocation;
     private int totalKM = 0;
@@ -91,9 +97,10 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
     private EditText et;
     private TextToSpeech tts;
 
+    private boolean RunForGroup;
 
-    private long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
-    private int Seconds, Minutes, MilliSeconds ;
+    private long MillisecondTime, TimeSaved, StartTime, TimeBuff, UpdateTime = 0L;
+    private int Seconds, Minutes, MilliSeconds;
     private Handler handler;
     private TextView textViewChrono;
 
@@ -190,13 +197,21 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_run);
 
+        if (savedInstanceState != null) {
+            hrWatchArrayList = hrWatchArrayListSaved;
+            hrBeltArrayList = hrBeltArrayListSaved;
+            hrOnLocList = hrOnLocListSaved;
+            latLngsPath = latLngsPathSaved;
+            MillisecondTime = TimeSaved;
+        }
+
         latituteField = (TextView) findViewById(R.id.latitudeLive);
         longitudeField = (TextView) findViewById(R.id.longitudeLive);
         speedField = (TextView) findViewById(R.id.speedLive);
         distanceField = (TextView) findViewById(R.id.distanceLive);
 
         StartTime = SystemClock.uptimeMillis();
-        handler = new Handler() ;
+        handler = new Handler();
         handler.postDelayed(runnable, 0);
         textViewChrono = findViewById(R.id.stopWatchLive);
 
@@ -262,8 +277,9 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
 
         // Firebase
         Intent intentFromPrep = getIntent();
-        String userID = intentFromPrep.getStringExtra(MyProfileFragment.USER_ID);
+        userID = intentFromPrep.getStringExtra(MyProfileFragment.USER_ID);
         String recID = intentFromPrep.getStringExtra(RunPreparationFragment.RECORDIND_ID);
+        RunForGroup = intentFromPrep.getExtras().getBoolean(RUN_FOR_GROUP);
 
         // Get recording information from Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -313,7 +329,6 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
             }
         });
 
-        et = (EditText) findViewById(R.id.editText1);
         tts = new TextToSpeech(RunActivity.this, new TextToSpeech.OnInitListener() {
 
             @Override
@@ -324,7 +339,7 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                     if (result == TextToSpeech.LANG_MISSING_DATA ||
                             result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("error", "This Language is not supported");
-                    } else if (ttsEnable){
+                    } else if (ttsEnable) {
                         text = ("Start running now.");
                         ConvertTextToSpeech();
                     }
@@ -462,9 +477,17 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
                     public void onSuccess(Void aVoid) {
                         Toast.makeText(getApplicationContext(), "Saved HR data successfully",
                                 Toast.LENGTH_SHORT).show();
-                        finish();
                     }
                 });
+        if (RunForGroup){
+            Intent intentGroup = new Intent(this, GroupActivity.class);
+            intentGroup.putExtra(GroupActivity.USER_ID, userID);
+            intentGroup.putExtra(GroupActivity.SCORE, String.valueOf(score));
+            intentGroup.putExtra(GroupActivity.SCORE_KM, String.valueOf(score/distance));
+            startActivity(intentGroup);
+        }else {
+            finish();
+        }
     }
 
     @Override
@@ -512,11 +535,11 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         }
     }
 
-//    private void newKMreached(Double totalDistance) {
-//        totalKM = (int) Math.round(totalDistance/ONE_KM);
-//        text = "You reached another kilometer";
-//        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-//    }
+    private void newKMreached(Double totalDistance) {
+        totalKM = (int) Math.round(totalDistance/ONE_KM);
+        text = "You reached another kilometer";
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -644,5 +667,18 @@ public class RunActivity extends AppCompatActivity implements LocationListener, 
         }
 
     };
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        hrWatchArrayListSaved = hrWatchArrayList;
+        hrBeltArrayListSaved = hrBeltArrayList;
+        hrOnLocListSaved = hrOnLocList;
+
+        latLngsPathSaved = latLngsPath;
+
+        TimeSaved = MillisecondTime;
+    }
 }
 

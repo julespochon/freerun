@@ -172,6 +172,7 @@ public class RunPreparationFragment extends Fragment {
                 final Switch useWatchSwitch = fragmentView.findViewById(R.id.switchWatch);
                 final Switch useHearRateBelt = fragmentView.findViewById(R.id.switchHRBelt);
                 final Switch useVocalCoach = fragmentView.findViewById(R.id.switchVocalCoach);
+                final Switch runForGroup = fragmentView.findViewById(R.id.switchGroup);
 
                 recordingRef.runTransaction(new Transaction.Handler() {
                     @NonNull
@@ -202,6 +203,7 @@ public class RunPreparationFragment extends Fragment {
                         intentStartRunning.putExtra(USER_ID, userID);
                         intentStartRunning.putExtra(RECORDIND_ID, recordingKeySaved);
                         intentStartRunning.putExtra(RunActivity.EXTRAS_DEVICE_ADDRESS, deviceAddress);
+                        intentStartRunning.putExtra(RunActivity.RUN_FOR_GROUP, runForGroup.isChecked());
                         startActivity(intentStartRunning);
                     }
                 });

@@ -1,6 +1,5 @@
 package com.example.d_wen.freerun;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
@@ -27,14 +26,12 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
@@ -94,6 +91,11 @@ public class HistoryFragment extends Fragment
 //        SupportMapFragment mapFragment = (SupportMapFragment)
 //                getFragmentManager().findFragmentById(R.id.historyGoogleMap);
 //        mapFragment.getMapAsync(this);
+//
+//        if (hMap == null) {
+//            hMap = ((SupportMapFragment) getFragmentManager()
+//                    .findFragmentById(R.id.historyGoogleMap)).getMapAsync();
+//        }
 
         listView = fragmentView.findViewById(R.id.myHistoryList);
         adapter = new RecordingAdapter(getActivity(), R.layout.row_history);
@@ -102,7 +104,7 @@ public class HistoryFragment extends Fragment
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getContext(), "Exercise: " + i + " on " + ((TextView) view
+                Toast.makeText(getContext(), "Exercise on : " + ((TextView) view
                         .findViewById(R.id.exerciseDateTime)).getText().toString(), Toast
                         .LENGTH_SHORT).show();
                 recRefList.get(i).child("Locations_list").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -116,11 +118,11 @@ public class HistoryFragment extends Fragment
                             // Create LatLng for each locations
                             latLngPath.add( new LatLng(latitude, longitude));
                         }
-//                        GenericTypeIndicator<List<LatLng>> t = new GenericTypeIndicator<List<LatLng>>() {};
-//
-//                        List<LatLng> latLngPath = dataSnapshot.child("0").getValue(t);
-                        Log.d(TAG, "Map reference :"+hMap);
-                        drawRouteOnMap(hMap, latLngPath);
+
+                        if (hMap != null) {
+                            Log.d(TAG, "Map reference :"+hMap);
+                            drawRouteOnMap(hMap, latLngPath);
+                        }
                     }
 
                     @Override
@@ -173,7 +175,6 @@ public class HistoryFragment extends Fragment
                     .exerciseSmartWatch ? "yes" : "no");
             ((TextView) row.findViewById(R.id.exerciseDevice2)).setText(getItem(position)
                     .exerciseHRbelt ? "yes" : "no");
-            ((TextView) row.findViewById(R.id.recordingReference)).setText(String.valueOf(getItem(position).recordingRef));
 
             return row;
         }
@@ -183,7 +184,6 @@ public class HistoryFragment extends Fragment
         protected long exerciseDateTime;
         protected boolean exerciseSmartWatch;
         protected boolean exerciseHRbelt;
-        protected DatabaseReference recordingRef;
         protected ArrayList<LatLng> latLongPath;
         protected ArrayList<Integer> heartRateLOC;
     }
@@ -196,8 +196,6 @@ public class HistoryFragment extends Fragment
                 final Recording recording = new Recording();
 
                 recRefList.add(rec.getRef());
-                recording.recordingRef = rec.getRef();
-                //recording.latLongPath = (rec.child("Locations_list").get);
                 recording.exerciseDateTime = Long.parseLong(rec.child("datetime").getValue()
                         .toString());
                 recording.exerciseSmartWatch = Boolean.parseBoolean(rec.child("use_watch")

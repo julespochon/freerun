@@ -11,6 +11,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.activity.WearableActivity;
@@ -23,12 +25,22 @@ public class RunningRecordingActivity extends WearableActivity implements
     private TextView mTextView;
     private ConstraintLayout mLayout;
 
+    private long MillisecondTime, TimeSaved, StartTime, TimeBuff, UpdateTime = 0L;
+    private int Seconds, Minutes, MilliSeconds;
+    private Handler handler;
+    private TextView textViewChrono;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_running_record);
 
         mTextView = (TextView) findViewById(R.id.text);
+
+        StartTime = SystemClock.uptimeMillis();
+        handler = new Handler();
+        handler.postDelayed(runnable, 0);
+        textViewChrono = findViewById(R.id.timeLive);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 checkSelfPermission("android" + ""
@@ -72,4 +84,30 @@ public class RunningRecordingActivity extends WearableActivity implements
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
     }
+
+    public Runnable runnable = new Runnable() {
+
+        public void run() {
+
+            MillisecondTime = SystemClock.uptimeMillis() - StartTime;
+
+            UpdateTime = TimeBuff + MillisecondTime;
+
+            Seconds = (int) (UpdateTime / 1000);
+
+            Minutes = Seconds / 60;
+
+            Seconds = Seconds % 60;
+
+            MilliSeconds = (int) (UpdateTime/100 % 10);
+
+
+            textViewChrono.setText("" + Minutes + ":"
+                    + String.format("%02d", Seconds) + ":"
+                    + String.format("%d", MilliSeconds));
+
+            handler.postDelayed(this, 0);
+        }
+
+    };
 }

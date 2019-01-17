@@ -19,6 +19,7 @@ public class Profile implements Serializable {
     protected int height;
     protected float weight;
     protected String photoPath;
+    protected double total_score=0;
 
    public Profile(String username, String password) {
         this.username = username;
